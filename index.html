@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equilibria – Life Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f14;
+    --surface: #16181f;
+    --surface2: #1e2028;
+    --surface3: #252830;
+    --border: #2e3140;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c2;
+    --accent4: #f76a8a;
+    --text: #e8e9f0;
+    --text2: #9094aa;
+    --text3: #5a5f73;
+    --sidebar-w: 260px;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+  /* ── LANDING ── */
+  #landing {
+    position:fixed; inset:0; background:var(--bg); z-index:1000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:32px; padding:32px;
+  }
+  #landing h1 { font-family:'Playfair Display',serif; font-size:3.2rem; font-weight:700; letter-spacing:-.02em; }
+  #landing h1 span { color:var(--accent); }
+  #landing p { color:var(--text2); font-size:1.1rem; text-align:center; max-width:480px; line-height:1.6; }
+  .role-cards { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+  .role-card {
+    background:var(--surface); border:2px solid var(--border); border-radius:var(--radius);
+    padding:32px 40px; cursor:pointer; text-align:center; transition:.25s all;
+    min-width:200px;
+  }
+  .role-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 20px 40px rgba(124,106,247,.2); }
+  .role-card .icon { font-size:2.8rem; margin-bottom:12px; }
+  .role-card h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:6px; }
+  .role-card p { color:var(--text2); font-size:.88rem; }
+
+  /* ── AUTH MODAL ── */
+  #authModal {
+    position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
+    z-index:2000; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:.3s;
+  }
+  #authModal.open { opacity:1; pointer-events:all; }
+  .auth-box {
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:40px; width:420px; max-width:95vw;
+  }
+  .auth-box h2 { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:6px; }
+  .auth-box .sub { color:var(--text2); font-size:.9rem; margin-bottom:28px; }
+  .auth-btn {
+    display:flex; align-items:center; gap:12px; width:100%; padding:13px 18px;
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:500;
+    cursor:pointer; margin-bottom:12px; transition:.2s;
+  }
+  .auth-btn:hover { border-color:var(--accent); background:var(--surface3); }
+  .auth-btn .logo { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:.85rem; font-weight:700; }
+  .g-logo { background:#fff; color:#4285f4; }
+  .a-logo { background:#000; color:#fff; border:1px solid #444; }
+  .ms-logo { background:#0078d4; color:#fff; }
+  .fb-logo { background:#1877f2; color:#fff; }
+  .divider { display:flex; align-items:center; gap:12px; color:var(--text3); font-size:.82rem; margin:16px 0; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .email-input {
+    width:100%; padding:12px 14px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); color:var(--text); font-family:'DM Sans',sans-serif;
+    font-size:.92rem; outline:none; margin-bottom:10px;
+  }
+  .email-input:focus { border-color:var(--accent); }
+  .price-badge { background:var(--surface2); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:.85rem; color:var(--text2); text-align:center; }
+  .price-badge span { color:var(--accent); font-weight:600; font-size:1rem; }
+
+  /* ── APP SHELL ── */
+  #app { display:none; min-height:100vh; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position:fixed; top:0; left:-280px; width:var(--sidebar-w); height:100vh;
+    background:var(--surface); border-right:1px solid var(--border);
+    z-index:500; transition:.35s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column; overflow-y:auto;
+    padding-bottom:24px;
+  }
+  #sidebar.open { left:0; box-shadow:8px 0 40px rgba(0,0,0,.5); }
+  .sidebar-head { padding:24px 20px 16px; border-bottom:1px solid var(--border); }
+  .sidebar-logo { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--accent); letter-spacing:-.01em; }
+  .sidebar-user { margin-top:10px; display:flex; align-items:center; gap:10px; }
+  .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:grid; place-items:center; font-size:.85rem; font-weight:700; }
+  .sidebar-name { font-size:.88rem; font-weight:500; }
+  .sidebar-role { font-size:.75rem; color:var(--text2); }
+  .nav-section { padding:16px 12px 4px; font-size:.7rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); }
+  .nav-item {
+    display:flex; align-items:center; gap:12px; padding:11px 16px; border-radius:var(--radius-sm);
+    cursor:pointer; color:var(--text2); font-size:.9rem; transition:.18s; margin:2px 8px;
+  }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { background:rgba(124,106,247,.15); color:var(--accent); }
+  .nav-item .ni { font-size:1.1rem; width:22px; text-align:center; }
+  .sidebar-footer { margin-top:auto; padding:16px 12px 0; border-top:1px solid var(--border); }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    position:fixed; top:0; left:0; right:0; height:62px;
+    background:rgba(14,15,20,.85); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border); z-index:400;
+    display:flex; align-items:center; gap:16px; padding:0 20px;
+  }
+  .menu-btn { background:none; border:none; color:var(--text); cursor:pointer; font-size:1.4rem; padding:6px; border-radius:8px; transition:.15s; }
+  .menu-btn:hover { background:var(--surface2); }
+  .page-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:600; }
+  .topbar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .notif-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:7px 10px; cursor:pointer; color:var(--text2); font-size:1rem; position:relative; transition:.15s; }
+  .notif-btn:hover { color:var(--text); }
+  .notif-dot { position:absolute; top:4px; right:4px; width:7px; height:7px; background:var(--accent4); border-radius:50%; }
+
+  /* ── MAIN ── */
+  #main { padding:80px 24px 32px; max-width:1200px; margin:0 auto; }
+
+  /* ── PAGES ── */
+  .page { display:none; animation:fadeIn .3s ease; }
+  .page.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  /* ── CARDS / GRID ── */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .grid-auto { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  .card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px; position:relative; overflow:hidden;
+  }
+  .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .card-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .badge { display:inline-flex; align-items:center; padding:3px 9px; border-radius:99px; font-size:.73rem; font-weight:600; }
+  .badge-purple { background:rgba(124,106,247,.2); color:var(--accent); }
+  .badge-orange { background:rgba(247,162,106,.2); color:var(--accent2); }
+  .badge-green { background:rgba(106,247,194,.2); color:var(--accent3); }
+  .badge-red { background:rgba(247,106,138,.2); color:var(--accent4); }
+
+  /* ── OVERVIEW STATS ── */
+  .stat-card { text-align:center; padding:24px 20px; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:2.4rem; font-weight:700; }
+  .stat-label { color:var(--text2); font-size:.82rem; margin-top:4px; }
+  .accent-line { height:3px; border-radius:99px; margin-top:16px; }
+
+  /* ── TASKS ── */
+  .task-item {
+    display:flex; align-items:center; gap:12px; padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .task-item:last-child { border-bottom:none; }
+  .task-check {
+    width:20px; height:20px; border-radius:6px; border:2px solid var(--border);
+    cursor:pointer; flex-shrink:0; display:grid; place-items:center; transition:.15s;
+  }
+  .task-check.done { background:var(--accent); border-color:var(--accent); }
+  .task-check.done::after { content:'✓'; color:#fff; font-size:.75rem; font-weight:700; }
+  .task-text { flex:1; font-size:.9rem; }
+  .task-text.done { text-decoration:line-through; color:var(--text3); }
+  .task-meta { display:flex; gap:6px; align-items:center; }
+  .task-deadline { font-size:.75rem; color:var(--text3); }
+  .task-repeat { font-size:.7rem; }
+
+  /* ADD TASK FORM */
+  .add-form { display:grid; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+  .form-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .inp {
+    flex:1; min-width:120px; padding:9px 12px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:var(--radius-sm);
+    color:var(--text); font-family:'DM Sans',sans-serif; font-size:.88rem; outline:none;
+  }
+  .inp:focus { border-color:var(--accent); }
+  select.inp option { background:var(--surface2); }
+  .btn {
+    padding:9px 18px; border-radius:var(--radius-sm); border:none;
+    font-family:'DM Sans',sans-serif; font-size:.88rem; font-weight:600;
+    cursor:pointer; transition:.18s;
+  }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:#9179ff; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text2); }
+  .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-sm { padding:6px 12px; font-size:.8rem; }
+
+  /* ── MEDICATIONS ── */
+  .med-item {
+    display:flex; align-items:center; gap:14px; padding:14px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .med-item:last-child { border-bottom:none; }
+  .med-icon { width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:1.3rem; flex-shrink:0; }
+  .med-info { flex:1; }
+  .med-name { font-weight:600; font-size:.92rem; }
+  .med-time { color:var(--text2); font-size:.8rem; margin-top:2px; }
+  .med-taken { font-size:.78rem; }
+
+  /* ── TIMETABLE ── */
+  .time-slot {
+    display:flex; gap:14px; padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .time-slot:last-child { border-bottom:none; }
+  .time-label { width:56px; font-size:.8rem; color:var(--text3); flex-shrink:0; padding-top:3px; }
+  .slot-event {
+    flex:1; padding:8px 12px; border-radius:var(--radius-sm);
+    font-size:.85rem; font-weight:500; border-left:3px solid;
+  }
+  .slot-purple { background:rgba(124,106,247,.12); border-color:var(--accent); }
+  .slot-orange { background:rgba(247,162,106,.12); border-color:var(--accent2); }
+  .slot-green { background:rgba(106,247,194,.12); border-color:var(--accent3); }
+  .slot-red { background:rgba(247,106,138,.12); border-color:var(--accent4); }
+  .slot-title { font-weight:600; }
+  .slot-sub { font-size:.75rem; color:var(--text2); margin-top:2px; }
+
+  /* ── FLASHCARDS ── */
+  .flashcard-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .flashcard {
+    background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px; cursor:pointer; min-height:140px; display:flex; flex-direction:column;
+    justify-content:center; position:relative; transition:.3s;
+    transform-style:preserve-3d; perspective:800px;
+  }
+  .flashcard:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .fc-front,.fc-back { backface-visibility:hidden; }
+  .fc-q { font-size:.85rem; color:var(--text2); margin-bottom:8px; }
+  .fc-a { font-size:.9rem; display:none; color:var(--accent3); }
+  .flashcard.flipped .fc-q { display:none; }
+  .flashcard.flipped .fc-a { display:block; }
+  .fc-subject { font-size:.7rem; color:var(--text3); margin-top:12px; }
+
+  /* ── UPLOAD ── */
+  .upload-zone {
+    border:2px dashed var(--border); border-radius:var(--radius); padding:32px;
+    text-align:center; cursor:pointer; transition:.2s; color:var(--text2);
+  }
+  .upload-zone:hover { border-color:var(--accent); background:rgba(124,106,247,.05); }
+  .upload-icon { font-size:2.5rem; margin-bottom:12px; }
+  .upload-label { font-size:.9rem; }
+  .upload-sub { font-size:.78rem; color:var(--text3); margin-top:4px; }
+  .file-list { margin-top:16px; display:grid; gap:8px; }
+  .file-item {
+    display:flex; align-items:center; gap:10px; padding:10px 14px;
+    background:var(--surface2); border-radius:var(--radius-sm); font-size:.85rem;
+  }
+  .file-item .fi-icon { font-size:1.2rem; }
+  .file-item .fi-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .file-item .fi-size { font-size:.75rem; color:var(--text3); }
+
+  /* ── REMINDERS ── */
+  .reminder-item {
+    display:flex; align-items:center; gap:12px; padding:13px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .reminder-item:last-child { border-bottom:none; }
+  .ri-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .ri-info { flex:1; }
+  .ri-title { font-size:.9rem; font-weight:500; }
+  .ri-time { font-size:.78rem; color:var(--text2); margin-top:2px; }
+  .ri-repeat { font-size:.72rem; color:var(--accent); margin-left:6px; }
+
+  /* ── OVERLAY ── */
+  #overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:490; display:none; }
+  #overlay.show { display:block; }
+
+  /* ── MODAL ── */
+  .modal {
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(.95);
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:32px; width:500px; max-width:95vw; z-index:600;
+    opacity:0; pointer-events:none; transition:.25s;
+  }
+  .modal.open { opacity:1; pointer-events:all; transform:translate(-50%,-50%) scale(1); }
+  .modal h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:20px; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text2); font-size:1.3rem; cursor:pointer; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar { height:6px; background:var(--surface3); border-radius:99px; overflow:hidden; margin-top:10px; }
+  .progress-fill { height:100%; border-radius:99px; transition:.5s; }
+
+  /* ── SUBSCRIPTION BANNER ── */
+  .sub-banner {
+    background:linear-gradient(135deg,rgba(124,106,247,.15),rgba(247,162,106,.1));
+    border:1px solid rgba(124,106,247,.3); border-radius:var(--radius);
+    padding:20px 24px; display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:24px; flex-wrap:wrap; gap:12px;
+  }
+  .sub-banner-text h4 { font-family:'Playfair Display',serif; font-size:1rem; margin-bottom:4px; }
+  .sub-banner-text p { font-size:.82rem; color:var(--text2); }
+
+  /* ── AI PANEL ── */
+  .ai-panel { background:var(--surface2); border-radius:var(--radius); padding:20px; margin-top:20px; }
+  .ai-thinking { display:flex; align-items:center; gap:10px; color:var(--text2); font-size:.88rem; }
+  .ai-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 1s infinite; }
+  .ai-dot:nth-child(2) { animation-delay:.2s; }
+  .ai-dot:nth-child(3) { animation-delay:.4s; }
+  @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+  .ai-result { font-size:.88rem; line-height:1.6; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:640px) {
+    .grid-2,.grid-3 { grid-template-columns:1fr; }
+    #main { padding:74px 14px 28px; }
+    .auth-box { padding:28px 20px; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+  <div style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">⚖️</div>
+    <h1>Equili<span>bria</span></h1>
+    <p>Your intelligent daily balance dashboard — for life, work, and everything in between.</p>
+  </div>
+  <div class="role-cards">
+    <div class="role-card" onclick="chooseRole('student')">
+      <div class="icon">🎓</div>
+      <h3>Student</h3>
+      <p>Timetables, lessons, flashcards, homework, medications & more</p>
+    </div>
+    <div class="role-card" onclick="chooseRole('worker')">
+      <div class="icon">💼</div>
+      <h3>Professional</h3>
+      <p>Work schedule, chores, reminders, parking, medications & more</p>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal">
+  <div class="auth-box">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <h2>Join Equilibria</h2>
+    <p class="sub">Sign in to save your data across all your devices</p>
+    <div class="price-badge">💜 <span>£4.99/month</span> — All features included. Cancel anytime.</div>
+    <button class="auth-btn" onclick="signIn('Google')"><span class="logo g-logo">G</span> Continue with Google</button>
+    <button class="auth-btn" onclick="signIn('Apple')"><span class="logo a-logo">🍎</span> Continue with Apple</button>
+    <button class="auth-btn" onclick="signIn('Microsoft')"><span class="logo ms-logo">M</span> Continue with Microsoft</button>
+    <button class="auth-btn" onclick="signIn('Facebook')"><span class="logo fb-logo">f</span> Continue with Facebook</button>
+    <div class="divider">or use email</div>
+    <input type="email" class="email-input" placeholder="your@email.com" id="emailInp">
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="signIn('Email')">Continue with Email →</button>
+    <p style="font-size:.73rem;color:var(--text3);text-align:center;margin-top:14px">By continuing you agree to our Terms & Privacy Policy. All sign-in methods use industry-standard encryption.</p>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- APP SHELL -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <span class="page-title" id="pageTitle">Overview</span>
+    <div class="topbar-right">
+      <button class="notif-btn" onclick="showPage('reminders')">🔔<span class="notif-dot"></span></button>
+      <div class="avatar" style="cursor:pointer" id="userAvatar">A</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-logo">⚖️ Equilibria</div>
+      <div class="sidebar-user">
+        <div class="avatar" id="sideAvatar">A</div>
+        <div>
+          <div class="sidebar-name" id="sidebarName">Alex</div>
+          <div class="sidebar-role" id="sidebarRole">Student</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section">Dashboard</div>
+    <div class="nav-item active" onclick="showPage('overview')"><span class="ni">🏠</span> Overview</div>
+    <div class="nav-item" onclick="showPage('timetable')"><span class="ni">🗓️</span> <span id="navTimetable">Timetable</span></div>
+    <div class="nav-section">Tasks & Wellness</div>
+    <div class="nav-item" onclick="showPage('tasks')"><span class="ni">✅</span> Tasks</div>
+    <div class="nav-item" onclick="showPage('reminders')"><span class="ni">🔔</span> Reminders</div>
+    <div class="nav-item" onclick="showPage('medications')"><span class="ni">💊</span> Medications</div>
+    <div class="nav-item student-only" onclick="showPage('lessons')"><span class="ni">📚</span> Lessons</div>
+    <div class="nav-item student-only" onclick="showPage('flashcards')"><span class="ni">🃏</span> Flashcards</div>
+    <div class="nav-section worker-only" style="display:none">Work</div>
+    <div class="nav-item worker-only" onclick="showPage('workschedule')" style="display:none"><span class="ni">🏢</span> Work Schedule</div>
+    <div class="nav-section">Account</div>
+    <div class="nav-item" onclick="showPage('subscription')"><span class="ni">💜</span> Subscription</div>
+    <div class="sidebar-footer">
+      <div class="nav-item" onclick="logout()"><span class="ni">👋</span> Sign Out</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+
+    <!-- ── OVERVIEW ── -->
+    <div class="page active" id="page-overview">
+      <div class="sub-banner">
+        <div class="sub-banner-text">
+          <h4>Good morning! ☀️ Ready to balance your day?</h4>
+          <p id="dateStr">Loading date…</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showPage('tasks')">View Tasks →</button>
+      </div>
+      <div class="grid-3" id="overviewStats" style="margin-bottom:20px"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><span class="card-title">📋 Today's Tasks</span><span class="badge badge-purple" id="taskCountBadge">0</span></div>
+          <div id="overviewTasks"></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:14px;width:100%" onclick="showPage('tasks')">All Tasks →</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">🗓️ Today's Schedule</span></div>
+          <div id="overviewSchedule"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">💊 Medications</span></div>
+          <div id="overviewMeds"></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:14px;width:100%" onclick="showPage('medications')">Manage →</button>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">🔔 Upcoming Reminders</span></div>
+          <div id="overviewReminders"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIMETABLE ── -->
+    <div class="page" id="page-timetable">
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-head"><span class="card-title">🗓️ Today's Schedule</span></div>
+          <div id="timetableSlots"></div>
+          <div class="add-form" id="addSlotForm">
+            <div class="form-row">
+              <input class="inp" id="slotTime" type="time" value="09:00">
+              <input class="inp" id="slotTitle" placeholder="Event / Class / Meeting">
+            </div>
+            <div class="form-row">
+              <input class="inp" id="slotSub" placeholder="Subject / Location (optional)">
+              <select class="inp" id="slotColor">
+                <option value="purple">Purple</option>
+                <option value="orange">Orange</option>
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+              </select>
+              <button class="btn btn-primary" onclick="addSlot()">+ Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">📊 Day Overview</span></div>
+          <div id="dayProgress"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TASKS ── -->
+    <div class="page" id="page-tasks">
+      <div class="grid-2">
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-head">
+            <span class="card-title">✅ All Tasks</span>
+            <div style="display:flex;gap:8px">
+              <span class="badge badge-orange" id="pendingCount">0 pending</span>
+              <span class="badge badge-green" id="doneCount">0 done</span>
+            </div>
+          </div>
+          <div id="taskList"></div>
+          <div class="add-form">
+            <div class="form-row">
+              <input class="inp" id="taskInput" placeholder="Task name…" style="flex:2">
+              <select class="inp" id="taskCat">
+                <option value="work">💼 Work</option>
+                <option value="study">📚 Study</option>
+                <option value="home">🏠 Home</option>
+                <option value="health">❤️ Health</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <input class="inp" id="taskDeadline" type="date" placeholder="Deadline (optional)">
+              <select class="inp" id="taskRepeat">
+                <option value="">No repeat</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REMINDERS ── -->
+    <div class="page" id="page-reminders">
+      <div class="card">
+        <div class="card-head"><span class="card-title">🔔 Reminders</span></div>
+        <div id="reminderList"></div>
+        <div class="add-form">
+          <div class="form-row">
+            <input class="inp" id="remTitle" placeholder="Reminder text…" style="flex:2">
+            <input class="inp" id="remTime" type="time">
+          </div>
+          <div class="form-row">
+            <input class="inp" id="remDate" type="date">
+            <select class="inp" id="remRepeat">
+              <option value="">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <select class="inp" id="remColor">
+              <option value="#7c6af7">Purple</option>
+              <option value="#f7a26a">Orange</option>
+              <option value="#6af7c2">Green</option>
+              <option value="#f76a8a">Red</option>
+            </select>
+            <button class="btn btn-primary" onclick="addReminder()">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MEDICATIONS ── -->
+    <div class="page" id="page-medications">
+      <div class="card">
+        <div class="card-head"><span class="card-title">💊 Medications</span></div>
+        <div id="medList"></div>
+        <div class="add-form">
+          <div class="form-row">
+            <input class="inp" id="medName" placeholder="Medication name">
+            <input class="inp" id="medDose" placeholder="Dose (e.g. 10mg)">
+          </div>
+          <div class="form-row">
+            <input class="inp" id="medTime" type="time">
+            <select class="inp" id="medFreq">
+              <option value="daily">Daily</option>
+              <option value="twice">Twice daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="asneeded">As needed</option>
+            </select>
+            <input class="inp" id="medNotes" placeholder="Notes (optional)">
+            <button class="btn btn-primary" onclick="addMed()">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LESSONS (STUDENT) ── -->
+    <div class="page" id="page-lessons">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><span class="card-title">📚 Upload Lessons</span></div>
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInp').click()" ondragover="ev.preventDefault()" ondrop="handleDrop(event)">
+            <div class="upload-icon">📎</div>
+            <div class="upload-label">Click to upload or drag & drop</div>
+            <div class="upload-sub">PDF, PowerPoint (.pptx), Google Slides, JPEG, PNG, JPG</div>
+          </div>
+          <input type="file" id="fileInp" multiple accept=".pdf,.pptx,.ppt,.jpg,.jpeg,.png" style="display:none" onchange="handleFiles(this.files)">
+          <div class="file-list" id="fileList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">🤖 AI Flashcard Generator</span></div>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:14px">Select a subject and let AI generate flashcards from your uploaded lessons.</p>
+          <div class="form-row" style="margin-bottom:12px">
+            <input class="inp" id="genSubject" placeholder="Subject (e.g. Biology, Maths)">
+            <input class="inp" id="genTopic" placeholder="Topic or prompt">
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="generateFlashcards()">✨ Generate Flashcards with AI</button>
+          <div id="aiPanel" class="ai-panel" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FLASHCARDS ── -->
+    <div class="page" id="page-flashcards">
+      <div class="card-head" style="margin-bottom:16px">
+        <span style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600">🃏 Flashcards</span>
+        <button class="btn btn-outline btn-sm" onclick="showPage('lessons')">+ Generate More</button>
+      </div>
+      <p style="font-size:.85rem;color:var(--text2);margin-bottom:16px">Click a card to reveal the answer.</p>
+      <div class="flashcard-grid" id="flashcardGrid"></div>
+    </div>
+
+    <!-- ── WORK SCHEDULE (WORKER) ── -->
+    <div class="page" id="page-workschedule">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><span class="card-title">🏢 Work Schedule</span></div>
+          <div id="workSlots"></div>
+          <div class="add-form">
+            <div class="form-row">
+              <input class="inp" id="workTime" type="time">
+              <input class="inp" id="workTitle" placeholder="Meeting / Task / Commute">
+            </div>
+            <div class="form-row">
+              <input class="inp" id="workLocation" placeholder="📍 Location / Parking">
+              <button class="btn btn-primary" onclick="addWorkSlot()">+ Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">📍 Parking & Locations</span></div>
+          <div id="parkingList"></div>
+          <div class="add-form">
+            <div class="form-row">
+              <input class="inp" id="parkNote" placeholder="Parking note (e.g. Level 2, Bay 45)">
+              <button class="btn btn-primary" onclick="addParking()">+ Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUBSCRIPTION ── -->
+    <div class="page" id="page-subscription">
+      <div class="card" style="max-width:520px;margin:0 auto;text-align:center;padding:40px">
+        <div style="font-size:3rem;margin-bottom:16px">💜</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:8px">Equilibria Pro</h2>
+        <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--accent);margin:16px 0">£4.99<span style="font-size:1rem;color:var(--text2);font-family:'DM Sans',sans-serif">/month</span></div>
+        <p style="color:var(--text2);font-size:.9rem;line-height:1.7;margin-bottom:24px">Everything you need to balance your life — tasks, medications, timetables, AI flashcards, reminders, and more. Sync across all your devices.</p>
+        <div style="text-align:left;margin-bottom:28px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Unlimited tasks & reminders</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> AI-powered flashcard generation</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Medication tracking & alerts</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Daily timetable & schedule builder</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Cross-device sync & cloud backup</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Google, Apple, Microsoft sign-in</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="alert('Subscription management coming soon!')">Manage Subscription</button>
+        <p style="font-size:.75rem;color:var(--text3);margin-top:14px">Cancel anytime. Billed monthly. Secured with Stripe.</p>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ─── STATE ───
+let state = {
+  role: 'student',
+  user: null,
+  tasks: [
+    {id:1,text:'Complete biology essay',cat:'study',deadline:'2025-03-15',repeat:'',done:false},
+    {id:2,text:'Take morning vitamins',cat:'health',deadline:'',repeat:'daily',done:false},
+    {id:3,text:'Clean bedroom',cat:'home',deadline:'',repeat:'weekly',done:false},
+  ],
+  reminders: [
+    {id:1,title:'Morning routine',time:'07:30',date:'',repeat:'daily',color:'#7c6af7'},
+    {id:2,title:'Submit coursework',time:'17:00',date:'2025-03-20',repeat:'',color:'#f76a8a'},
+    {id:3,title:'Weekly revision',time:'14:00',date:'',repeat:'weekly',color:'#f7a26a'},
+  ],
+  medications: [
+    {id:1,name:'Vitamin D',dose:'1000IU',time:'08:00',freq:'daily',taken:false},
+    {id:2,name:'Omega-3',dose:'500mg',time:'08:00',freq:'daily',taken:false},
+  ],
+  slots: [
+    {id:1,time:'08:30',title:'Maths Lecture',sub:'Room 204',color:'purple'},
+    {id:2,time:'10:00',title:'Biology Lab',sub:'Science Block B',color:'green'},
+    {id:3,time:'12:00',title:'Lunch Break',sub:'Cafeteria',color:'orange'},
+    {id:4,time:'14:00',title:'Study Session',sub:'Library',color:'purple'},
+  ],
+  workSlots: [
+    {id:1,time:'09:00',title:'Team standup',location:'Conference Rm 1'},
+    {id:2,time:'11:00',title:'Client call',location:'Desk / Zoom'},
+    {id:3,time:'13:00',title:'Lunch',location:'Kitchen'},
+  ],
+  parking: ['Level 2, Bay 45 – Main Office'],
+  flashcards: [
+    {id:1,q:'What is photosynthesis?',a:'The process by which plants use sunlight, water & CO₂ to produce oxygen and energy (glucose).',subject:'Biology'},
+    {id:2,q:'Define the Pythagorean theorem',a:'In a right triangle: a² + b² = c², where c is the hypotenuse.',subject:'Maths'},
+    {id:3,q:'What are Newton\'s Laws of Motion?',a:'1) Inertia. 2) F=ma. 3) Every action has an equal and opposite reaction.',subject:'Physics'},
+    {id:4,q:'What is the mitochondria?',a:'The "powerhouse of the cell" — produces ATP energy through cellular respiration.',subject:'Biology'},
+  ],
+  files: [],
+  nextId: 100,
+};
+
+// ─── LANDING / AUTH ───
+function chooseRole(role) {
+  state.role = role;
+  document.getElementById('authModal').classList.add('open');
+}
+function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
+function signIn(provider) {
+  const name = prompt(`Enter your name (simulating ${provider} sign-in):`, 'Alex') || 'Alex';
+  state.user = { name, provider };
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('authModal').classList.remove('open');
+  launchApp();
+}
+function logout() {
+  if(confirm('Sign out?')) { document.getElementById('landing').style.display='flex'; document.getElementById('app').style.display='none'; closeSidebar(); }
+}
+
+function launchApp() {
+  const app = document.getElementById('app');
+  app.style.display = 'block';
+  const name = state.user.name;
+  document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+  document.getElementById('sideAvatar').textContent = name[0].toUpperCase();
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarRole').textContent = state.role === 'student' ? '🎓 Student' : '💼 Professional';
+  // Role-specific nav
+  document.querySelectorAll('.student-only').forEach(el => el.style.display = state.role==='student'?'flex':'none');
+  document.querySelectorAll('.worker-only').forEach(el => el.style.display = state.role==='worker'?'flex':'none');
+  document.getElementById('navTimetable').textContent = state.role==='student' ? 'Timetable' : 'Daily Schedule';
+  document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  renderAll();
+  showPage('overview');
+}
+
+// ─── SIDEBAR ───
+function toggleSidebar() {
+  const s = document.getElementById('sidebar'), o = document.getElementById('overlay');
+  s.classList.toggle('open'); o.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ─── PAGES ───
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+  // highlight nav
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+  const titles = {overview:'Overview',timetable:state.role==='student'?'Timetable':'Daily Schedule',tasks:'Tasks',reminders:'Reminders',medications:'Medications',lessons:'Lessons',flashcards:'Flashcards',workschedule:'Work Schedule',subscription:'Subscription'};
+  document.getElementById('pageTitle').textContent = titles[id] || id;
+  closeSidebar();
+  renderAll();
+}
+
+// ─── RENDER ───
+function renderAll() {
+  renderTasks(); renderReminders(); renderMeds(); renderSlots(); renderFlashcards();
+  renderOverview(); renderWorkSlots(); renderParking();
+}
+
+// TASKS
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  if(!list) return;
+  const icons = {work:'💼',study:'📚',home:'🏠',health:'❤️'};
+  list.innerHTML = state.tasks.map(t => `
+    <div class="task-item">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})"></div>
+      <div class="task-text ${t.done?'done':''}">${icons[t.cat]||''} ${t.text}</div>
+      <div class="task-meta">
+        ${t.deadline?`<span class="task-deadline">📅 ${t.deadline}</span>`:''}
+        ${t.repeat?`<span class="badge badge-purple task-repeat">🔁 ${t.repeat}</span>`:''}
+        <button onclick="removeTask(${t.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem">✕</button>
+      </div>
+    </div>`).join('');
+  const done = state.tasks.filter(t=>t.done).length;
+  const el1 = document.getElementById('pendingCount'), el2 = document.getElementById('doneCount');
+  if(el1) el1.textContent = `${state.tasks.length-done} pending`;
+  if(el2) el2.textContent = `${done} done`;
+}
+function addTask() {
+  const text = document.getElementById('taskInput').value.trim();
+  if(!text) return;
+  state.tasks.push({id:state.nextId++,text,cat:document.getElementById('taskCat').value,deadline:document.getElementById('taskDeadline').value,repeat:document.getElementById('taskRepeat').value,done:false});
+  document.getElementById('taskInput').value='';
+  renderTasks(); renderOverview();
+}
+function toggleTask(id) {
+  const t = state.tasks.find(t=>t.id===id);
+  if(t) { t.done=!t.done; renderTasks(); renderOverview(); }
+}
+function removeTask(id) { state.tasks=state.tasks.filter(t=>t.id!==id); renderTasks(); renderOverview(); }
+
+// REMINDERS
+function renderReminders() {
+  const list = document.getElementById('reminderList');
+  if(!list) return;
+  list.innerHTML = state.reminders.map(r => `
+    <div class="reminder-item">
+      <div class="ri-dot" style="background:${r.color}"></div>
+      <div class="ri-info">
+        <div class="ri-title">${r.title} ${r.repeat?`<span class="ri-repeat">🔁 ${r.repeat}</span>`:''}</div>
+        <div class="ri-time">${r.time}${r.date?' · '+r.date:''}</div>
+      </div>
+      <button onclick="removeReminder(${r.id})" style="background:none;border:none;color:var(--text3);cursor:pointer">✕</button>
+    </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No reminders yet.</p>';
+}
+function addReminder() {
+  const title = document.getElementById('remTitle').value.trim();
+  if(!title) return;
+  state.reminders.push({id:state.nextId++,title,time:document.getElementById('remTime').value,date:document.getElementById('remDate').value,repeat:document.getElementById('remRepeat').value,color:document.getElementById('remColor').value});
+  document.getElementById('remTitle').value='';
+  renderReminders(); renderOverview();
+}
+function removeReminder(id) { state.reminders=state.reminders.filter(r=>r.id!==id); renderReminders(); renderOverview(); }
+
+// MEDICATIONS
+function renderMeds() {
+  const list = document.getElementById('medList');
+  if(!list) return;
+  const icons = ['💊','💉','🩺','🧴'];
+  list.innerHTML = state.medications.map((m,i) => `
+    <div class="med-item">
+      <div class="med-icon" style="background:rgba(124,106,247,.15)">${icons[i%icons.length]}</div>
+      <div class="med-info">
+        <div class="med-name">${m.name} <span style="color:var(--text3);font-size:.8rem">${m.dose}</span></div>
+        <div class="med-time">⏰ ${m.time} · ${m.freq}</div>
+      </div>
+      <button class="btn btn-sm ${m.taken?'btn-primary':'btn-outline'}" onclick="toggleMed(${m.id})">${m.taken?'✓ Taken':'Take'}</button>
+      <button onclick="removeMed(${m.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:4px">✕</button>
+    </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No medications added.</p>';
+}
+function addMed() {
+  const name = document.getElementById('medName').value.trim();
+  if(!name) return;
+  state.medications.push({id:state.nextId++,name,dose:document.getElementById('medDose').value,time:document.getElementById('medTime').value,freq:document.getElementById('medFreq').value,taken:false});
+  document.getElementById('medName').value=''; document.getElementById('medDose').value='';
+  renderMeds(); renderOverview();
+}
+function toggleMed(id) { const m=state.medications.find(m=>m.id===id); if(m)m.taken=!m.taken; renderMeds(); renderOverview(); }
+function removeMed(id) { state.medications=state.medications.filter(m=>m.id!==id); renderMeds(); renderOverview(); }
+
+// SLOTS (Timetable)
+function renderSlots() {
+  const el = document.getElementById('timetableSlots'); if(!el) return;
+  const sorted = [...state.slots].sort((a,b)=>a.time.localeCompare(b.time));
+  el.innerHTML = sorted.map(s => `
+    <div class="time-slot">
+      <div class="time-label">${s.time}</div>
+      <div class="slot-event slot-${s.color}">
+        <div class="slot-title">${s.title}</div>
+        ${s.sub?`<div class="slot-sub">📍 ${s.sub}</div>`:''}
+      </div>
+      <button onclick="removeSlot(${s.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:6px">✕</button>
+    </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No events today.</p>';
+  const dp = document.getElementById('dayProgress'); if(!dp) return;
+  const now = new Date(); const h = now.getHours()+(now.getMinutes()/60);
+  const pct = Math.min(100,Math.max(0,((h-6)/14)*100));
+  dp.innerHTML = `
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:12px">Day progress (6am–8pm)</p>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+    <p style="font-size:.78rem;color:var(--text3);margin-top:6px">${Math.round(pct)}% of your day has passed</p>
+    <p style="font-size:.82rem;color:var(--text2);margin-top:16px">You have <strong style="color:var(--text)">${sorted.length} events</strong> scheduled today.</p>`;
+}
+function addSlot() {
+  const title = document.getElementById('slotTitle').value.trim(); if(!title) return;
+  state.slots.push({id:state.nextId++,time:document.getElementById('slotTime').value,title,sub:document.getElementById('slotSub').value,color:document.getElementById('slotColor').value});
+  document.getElementById('slotTitle').value=''; document.getElementById('slotSub').value='';
+  renderSlots();
+}
+function removeSlot(id) { state.slots=state.slots.filter(s=>s.id!==id); renderSlots(); renderOverview(); }
+
+// WORK SLOTS
+function renderWorkSlots() {
+  const el = document.getElementById('workSlots'); if(!el) return;
+  el.innerHTML = state.workSlots.map(s => `
+    <div class="time-slot">
+      <div class="time-label">${s.time}</div>
+      <div class="slot-event slot-purple">
+        <div class="slot-title">${s.title}</div>
+        ${s.location?`<div class="slot-sub">📍 ${s.location}</div>`:''}
+      </div>
+      <button onclick="removeWorkSlot(${s.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:6px">✕</button>
+    </div>`).join('');
+}
+function addWorkSlot() {
+  const title = document.getElementById('workTitle').value.trim(); if(!title) return;
+  state.workSlots.push({id:state.nextId++,time:document.getElementById('workTime').value,title,location:document.getElementById('workLocation').value});
+  document.getElementById('workTitle').value=''; document.getElementById('workLocation').value='';
+  renderWorkSlots();
+}
+function removeWorkSlot(id) { state.workSlots=state.workSlots.filter(s=>s.id!==id); renderWorkSlots(); }
+
+// PARKING
+function renderParking() {
+  const el = document.getElementById('parkingList'); if(!el) return;
+  el.innerHTML = state.parking.map((p,i) => `
+    <div class="reminder-item">
+      <div class="ri-dot" style="background:var(--accent2)"></div>
+      <div class="ri-info"><div class="ri-title">📍 ${p}</div></div>
+      <button onclick="removeParking(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer">✕</button>
+    </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No saved locations.</p>';
+}
+function addParking() {
+  const note = document.getElementById('parkNote').value.trim(); if(!note) return;
+  state.parking.push(note); document.getElementById('parkNote').value=''; renderParking();
+}
+function removeParking(i) { state.parking.splice(i,1); renderParking(); }
+
+// FLASHCARDS
+function renderFlashcards() {
+  const grid = document.getElementById('flashcardGrid'); if(!grid) return;
+  grid.innerHTML = state.flashcards.map(f => `
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="fc-front">
+        <div class="fc-q">❓ Question</div>
+        <div style="font-size:.92rem;font-weight:500;line-height:1.5">${f.q}</div>
+      </div>
+      <div class="fc-back">
+        <div class="fc-q">💡 Answer</div>
+        <div class="fc-a">${f.a}</div>
+      </div>
+      <div class="fc-subject">${f.subject}</div>
+    </div>`).join('') || '<p style="color:var(--text3)">No flashcards yet. Go to Lessons to generate some!</p>';
+}
+
+// OVERVIEW
+function renderOverview() {
+  // Stats
+  const pending = state.tasks.filter(t=>!t.done).length;
+  const meds = state.medications.filter(m=>!m.taken).length;
+  const statsEl = document.getElementById('overviewStats');
+  if(statsEl) statsEl.innerHTML = `
+    <div class="card stat-card">
+      <div class="stat-num" style="color:var(--accent)">${state.tasks.length}</div>
+      <div class="stat-label">Total Tasks</div>
+      <div class="progress-bar accent-line" style="margin-top:12px"><div class="progress-fill" style="width:${state.tasks.length?((state.tasks.filter(t=>t.done).length/state.tasks.length)*100):0}%;background:var(--accent)"></div></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-num" style="color:var(--accent2)">${state.slots.length}</div>
+      <div class="stat-label">Events Today</div>
+      <div class="accent-line" style="background:var(--accent2);margin-top:12px"></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-num" style="color:${meds>0?'var(--accent4)':'var(--accent3)'}">${meds}</div>
+      <div class="stat-label">Meds Remaining</div>
+      <div class="accent-line" style="background:${meds>0?'var(--accent4)':'var(--accent3)'};margin-top:12px"></div>
+    </div>`;
+  // Tasks
+  const ot = document.getElementById('overviewTasks');
+  if(ot) {
+    const top = state.tasks.filter(t=>!t.done).slice(0,4);
+    const icons = {work:'💼',study:'📚',home:'🏠',health:'❤️'};
+    ot.innerHTML = top.map(t=>`
+      <div class="task-item">
+        <div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})"></div>
+        <div class="task-text">${icons[t.cat]||''} ${t.text}</div>
+        ${t.deadline?`<span class="task-deadline">📅 ${t.deadline}</span>`:''}
+      </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:8px 0">All tasks done! 🎉</p>';
+    const bc = document.getElementById('taskCountBadge');
+    if(bc) bc.textContent = pending;
+  }
+  // Schedule
+  const os = document.getElementById('overviewSchedule');
+  if(os) {
+    const src = state.role==='worker' ? state.workSlots : state.slots;
+    const sorted = [...src].sort((a,b)=>a.time.localeCompare(b.time)).slice(0,4);
+    os.innerHTML = sorted.map(s=>`
+      <div class="time-slot">
+        <div class="time-label">${s.time}</div>
+        <div class="slot-event slot-${s.color||'purple'}">
+          <div class="slot-title">${s.title}</div>
+          ${(s.sub||s.location)?`<div class="slot-sub">📍 ${s.sub||s.location}</div>`:''}
+        </div>
+      </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:8px 0">Nothing scheduled.</p>';
+  }
+  // Meds
+  const om = document.getElementById('overviewMeds');
+  if(om) {
+    om.innerHTML = state.medications.slice(0,3).map(m=>`
+      <div class="med-item" style="padding:8px 0">
+        <div class="med-icon" style="background:rgba(124,106,247,.15);width:32px;height:32px;font-size:1rem">💊</div>
+        <div class="med-info"><div class="med-name">${m.name} ${m.dose}</div><div class="med-time">${m.time}</div></div>
+        <span class="badge ${m.taken?'badge-green':'badge-red'}">${m.taken?'Taken':'Due'}</span>
+      </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem">No medications added.</p>';
+  }
+  // Reminders
+  const or_ = document.getElementById('overviewReminders');
+  if(or_) {
+    or_.innerHTML = state.reminders.slice(0,4).map(r=>`
+      <div class="reminder-item" style="padding:8px 0">
+        <div class="ri-dot" style="background:${r.color}"></div>
+        <div class="ri-info"><div class="ri-title" style="font-size:.85rem">${r.title}</div><div class="ri-time">${r.time}</div></div>
+        ${r.repeat?`<span class="badge badge-purple" style="font-size:.7rem">🔁 ${r.repeat}</span>`:''}
+      </div>`).join('') || '<p style="color:var(--text3);font-size:.85rem">No reminders.</p>';
+  }
+}
+
+// FILES
+function handleFiles(files) {
+  const icons = {pdf:'📄',pptx:'📊',ppt:'📊',jpg:'🖼️',jpeg:'🖼️',png:'🖼️'};
+  Array.from(files).forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    state.files.push({name:f.name,size:(f.size/1024).toFixed(1)+'KB',icon:icons[ext]||'📎'});
+  });
+  renderFiles();
+}
+function handleDrop(e) { e.preventDefault(); handleFiles(e.dataTransfer.files); }
+function renderFiles() {
+  const fl = document.getElementById('fileList'); if(!fl) return;
+  fl.innerHTML = state.files.map(f=>`
+    <div class="file-item"><span class="fi-icon">${f.icon}</span><span class="fi-name">${f.name}</span><span class="fi-size">${f.size}</span></div>`).join('');
+}
+
+// AI FLASHCARD GEN
+async function generateFlashcards() {
+  const subject = document.getElementById('genSubject').value.trim() || 'General';
+  const topic = document.getElementById('genTopic').value.trim() || 'Give me 4 flashcards on any important topic';
+  const panel = document.getElementById('aiPanel');
+  panel.style.display = 'block';
+  panel.innerHTML = `<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="margin-left:4px">AI is generating your flashcards…</span></div>`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`You are a flashcard generator. Create exactly 4 flashcards for the subject "${subject}" on the topic: "${topic}". 
+Respond ONLY with a JSON array, no markdown, no backticks, just the raw JSON array like this:
+[{"q":"question","a":"answer","subject":"${subject}"},...]`}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const cards = JSON.parse(text);
+    cards.forEach(c => state.flashcards.push({id:state.nextId++,...c}));
+    panel.innerHTML = `<div class="ai-result" style="color:var(--accent3)">✨ ${cards.length} flashcards generated! Head to the Flashcards page to review them.</div>`;
+    renderFlashcards();
+  } catch(e) {
+    panel.innerHTML = `<div class="ai-result" style="color:var(--accent4)">⚠️ Could not generate flashcards. Please check your connection and try again.</div>`;
+  }
+}
+
+// DATE
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+});
+</script>
+</body>
+</html>
