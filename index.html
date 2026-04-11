@@ -2,13 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Equilibrium – Life Dashboard</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Equilibrium">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<!-- SEO / Social -->
+<meta name="description" content="Your intelligent daily balance dashboard for life, work, and everything in between.">
+<meta name="mobile-web-app-capable" content="yes">
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+
 :root{--bg:#f5f6fa;--surface:#fff;--surface2:#f0f1f7;--surface3:#e8eaf2;--border:#dde0ec;--accent:#6c5ce7;--accent2:#4caf50;--accent3:#00b894;--accent4:#e84393;--text:#1a1b2e;--text2:#5a5f7a;--text3:#a0a5bc;--sw:260px;--r:14px;--rs:8px;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
 
 /* LANDING */
 #landing{position:fixed;inset:0;background:var(--bg);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:32px;}
@@ -246,9 +260,33 @@ select.inp option{background:#fff;}
 
 @media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}#main{padding:74px 14px 28px}}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#c8cce0;border-radius:99px}
+
+
 </style>
 </head>
 <body>
+
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:6px">One-Time Setup</h2>
+      <p style="color:var(--text2);font-size:.88rem;line-height:1.6">Equilibrium uses Firebase for secure accounts and cross-device sync.<br>Paste your Firebase config below to get started.</p>
+    </div>
+    <div class="auth-msg err" id="fbSetupErr" style="display:none"></div>
+    <div style="background:var(--surface2);border-radius:var(--r);padding:20px;margin-bottom:20px">
+      <p style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:12px">How to get your Firebase config (free, 5 minutes):</p>
+      <div class="setup-step"><div class="step-num">1</div><div>Go to <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> → Create a new project</div></div>
+      <div class="setup-step"><div class="step-num">2</div><div>Click <strong>Build → Realtime Database</strong> → Create database → Start in <strong>test mode</strong></div></div>
+      <div class="setup-step"><div class="step-num">3</div><div>Click <strong>Build → Authentication</strong> → Get started → Enable <strong>Email/Password</strong> sign-in</div></div>
+      <div class="setup-step"><div class="step-num">4</div><div>Go to <strong>Project Settings</strong> (gear icon) → scroll to "Your apps" → Add a <strong>web app</strong> → copy the <code style="background:var(--surface3);padding:1px 5px;border-radius:4px">firebaseConfig</code> object</div></div>
+      <div class="setup-step"><div class="step-num">5</div><div>Paste the entire config JSON below and click Save</div></div>
+    </div>
+    <div class="auth-field">
+      <label class="auth-label">Firebase Config (paste the full JSON object)</label>
+      <textarea class="auth-inp" id="fbConfigInput" rows="7" placeholder='{"apiKey":"AIzaSy...","authDomain":"your-app.firebaseapp.com","databaseURL":"https://your-app-default-rtdb.firebaseio.com","projectId":"your-app","storageBucket":"your-app.appspot.com","messagingSenderId":"123456","appId":"1:123456:web:abcdef"}' style="resize:vertical;font-family:monospace;font-size:.78rem;line-height:1.5"></textarea>
+    </div>
+    <button class="auth-btn" onclick="saveFirebaseConfig()">Save &amp; Continue →</button>
+    <p style="font-size:.73rem;color:var(--text3);text-align:center;margin-top:14px;line-height:1.6">This config is stored only in this browser. You'll need to re-enter it on each new device where you deploy the app.</p>
+  </div>
+</div>
+
 
 <!-- LANDING -->
 <div id="landing">
@@ -269,7 +307,7 @@ select.inp option{background:#fff;}
     <button class="back-btn" onclick="goBack()">← Back</button>
     <div class="auth-logo">⚖️ Equilibrium</div>
     <div class="auth-tagline">Balance your life, every day.</div>
-    <div style="text-align:center;margin-bottom:20px"><span class="price-pill">💜 £4.99/month · Cancel anytime</span></div>
+    <div style="text-align:center;margin-bottom:20px"><span class="price-pill">💜 £2.99/month · Cancel anytime</span></div>
     <div class="auth-tabs">
       <div class="auth-tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</div>
       <div class="auth-tab" id="tabSignUp" onclick="switchTab('signup')">Create Account</div>
@@ -342,8 +380,8 @@ select.inp option{background:#fff;}
     <div class="nav-item" onclick="showPage('reminders')"><span class="ni">🔔</span> Reminders</div>
     <div class="nav-item" onclick="showPage('medications')"><span class="ni">💊</span> Medications</div>
     <div class="nav-item student-only" onclick="showPage('subjects')"><span class="ni">🗂️</span> Subjects</div>
-    <div class="nav-item student-only" onclick="showPage('lessons')"><span class="ni">📚</span> Lessons</div>
-    <div class="nav-item student-only" onclick="showPage('flashcards')"><span class="ni">🃏</span> Flashcards</div>
+    <div class="nav-item student-only" onclick="showPage(&apos;lessons&apos;)"><span class="ni">📚</span> Lessons</div>
+    <div class="nav-item student-only" onclick="showPage(&apos;flashcards&apos;)"><span class="ni">🃏</span> Flashcards</div>
     <div class="nav-section worker-only">Work</div>
     <div class="nav-item worker-only" onclick="showPage('workschedule')"><span class="ni">🏢</span> Work Schedule</div>
     <div class="nav-section">Account</div>
@@ -526,7 +564,7 @@ select.inp option{background:#fff;}
     <div class="page" id="page-flashcards">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <span style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600">🃏 Flashcards</span>
-        <button class="btn btn-o btn-sm" onclick="showPage('lessons')">+ Generate More</button>
+        <button class="btn btn-o btn-sm" onclick="showPage(&apos;lessons&apos;)">+ Generate More</button>
       </div>
       <p style="font-size:.85rem;color:var(--text2);margin-bottom:16px">Click a card to reveal the answer.</p>
       <div class="fc-grid" id="fcGrid"></div>
@@ -553,19 +591,52 @@ select.inp option{background:#fff;}
 
     <!-- PROFILE -->
     <div class="page" id="page-profile">
-      <div class="card" style="max-width:500px;margin:0 auto;padding:36px;text-align:center">
-        <div class="profile-av" id="profileAvatar">A</div>
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem" id="profileName">User</h2>
-        <p style="color:var(--text2);font-size:.88rem;margin-top:4px" id="profileEmail">user@example.com</p>
-        <span class="badge bp" style="margin-top:10px;font-size:.8rem" id="profileRole">🎓 Student</span>
-        <div style="border-top:1px solid var(--border);margin:24px 0"></div>
-        <div style="text-align:left;display:grid;gap:14px">
-          <div><label class="auth-label">Full Name</label><input class="auth-inp" id="editName" placeholder="Your name"></div>
-          <div><label class="auth-label">Email</label><input class="auth-inp" id="editEmail" type="email" placeholder="your@email.com"></div>
-          <div><label class="auth-label">New Password (leave blank to keep)</label><input class="auth-inp" id="editPw" type="password" placeholder="New password (min 8 chars)"></div>
+      <div style="max-width:540px;margin:0 auto;display:grid;gap:16px">
+
+        <!-- Identity card -->
+        <div class="card" style="padding:36px;text-align:center">
+          <div class="profile-av" id="profileAvatar">A</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem" id="profileName">User</h2>
+          <p style="color:var(--text2);font-size:.88rem;margin-top:4px" id="profileEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2a5f594f586a4f524b475a464f04494547">[email&#160;protected]</a></p>
+          <span class="badge bp" style="margin-top:10px;font-size:.8rem" id="profileRole">🎓 Student</span>
+          <div style="border-top:1px solid var(--border);margin:24px 0"></div>
+          <div style="text-align:left;display:grid;gap:14px">
+            <div><label class="auth-label">Full Name</label><input class="auth-inp" id="editName" placeholder="Your name"></div>
+            <div><label class="auth-label">Email</label><input class="auth-inp" id="editEmail" type="email" placeholder="your@email.com"></div>
+            <div><label class="auth-label">New Password (leave blank to keep)</label><input class="auth-inp" id="editPw" type="password" placeholder="New password (min 8 chars)"></div>
+          </div>
+          <button class="auth-btn" style="margin-top:20px" onclick="saveProfile()">Save Changes</button>
+          <div id="profileMsg" style="margin-top:12px;font-size:.82rem;color:var(--accent3);display:none">✅ Profile updated!</div>
         </div>
-        <button class="auth-btn" style="margin-top:20px" onclick="saveProfile()">Save Changes</button>
-        <div id="profileMsg" style="margin-top:12px;font-size:.82rem;color:var(--accent3);display:none">✅ Profile updated!</div>
+
+        <!-- Cloud sync status -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">☁️ Cloud Sync</span><span class="badge" id="syncBadge" style="background:rgba(0,184,148,.15);color:var(--accent3)">● Live</span></div>
+          <p style="font-size:.83rem;color:var(--text2);margin-bottom:12px;line-height:1.6">Your data is automatically saved to the cloud and synced across all your devices in real time.</p>
+          <div style="background:rgba(0,184,148,.06);border:1px solid rgba(0,184,148,.2);border-radius:var(--rs);padding:12px;font-size:.82rem;color:var(--accent3)">
+            ✅ Signed in as <strong id="syncEmail">–</strong> · All changes save instantly
+          </div>
+        </div>
+
+        <!-- Data management card -->
+        <div class="card">
+          <div class="card-head"><span class="card-title">💾 Data Management</span></div>
+          <p style="font-size:.83rem;color:var(--text2);margin-bottom:16px">Export your data as a backup or import it on a new device.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p btn-sm" onclick="exportData()">⬇ Export My Data</button>
+            <button class="btn btn-o btn-sm" onclick="document.getElementById('importInp').click()">⬆ Import Data</button>
+          </div>
+          <input type="file" id="importInp" accept=".json" style="display:none" onchange="importData(this)">
+          <div id="importMsg" style="margin-top:10px;font-size:.82rem;display:none"></div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="card" style="border-color:rgba(232,67,147,.3)">
+          <div class="card-head"><span class="card-title" style="color:var(--accent4)">⚠️ Danger Zone</span></div>
+          <p style="font-size:.83rem;color:var(--text2);margin-bottom:16px">Permanently delete your account and all associated data. This cannot be undone.</p>
+          <button class="btn btn-sm" style="background:rgba(232,67,147,.1);border:1px solid rgba(232,67,147,.4);color:var(--accent4)" onclick="deleteAccount()">Delete My Account</button>
+        </div>
+
       </div>
     </div>
 
@@ -574,7 +645,7 @@ select.inp option{background:#fff;}
       <div class="card" style="max-width:520px;margin:0 auto;text-align:center;padding:40px">
         <div style="font-size:3rem;margin-bottom:16px">💜</div>
         <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:8px">Equilibrium Pro</h2>
-        <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--accent);margin:16px 0">£4.99<span style="font-size:1rem;color:var(--text2);font-family:'DM Sans',sans-serif">/month</span></div>
+        <div style="font-family:'Playfair Display',serif;font-size:3rem;font-weight:700;color:var(--accent);margin:16px 0">£2.99<span style="font-size:1rem;color:var(--text2);font-family:'DM Sans',sans-serif">/month</span></div>
         <p style="color:var(--text2);font-size:.9rem;line-height:1.7;margin-bottom:24px">Everything you need to balance your life.</p>
         <div style="text-align:left;margin-bottom:28px;display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;align-items:center;gap:10px;font-size:.88rem"><span style="color:var(--accent3)">✓</span> Unlimited tasks &amp; reminders</div>
@@ -592,100 +663,117 @@ select.inp option{background:#fff;}
   </div><!-- /main -->
 </div><!-- /app -->
 
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script>
 // ═══════════════════════════════════════════════
-//  CRYPTO
+//  FIREBASE — hardcoded config
 // ═══════════════════════════════════════════════
-var Crypto = {
-  generateSalt: function() {
-    var b = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(b).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
-  },
-  hexToBytes: function(hex) {
-    var b = new Uint8Array(hex.length/2);
-    for(var i=0;i<b.length;i++) b[i]=parseInt(hex.slice(i*2,i*2+2),16);
-    return b;
-  },
-  hashPassword: async function(pw, salt) {
-    var enc = new TextEncoder();
-    var key = await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
-    var bits = await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:this.hexToBytes(salt),iterations:310000},key,256);
-    return Array.from(new Uint8Array(bits)).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
-  },
-  verify: async function(pw,hash,salt) {
-    var h = await this.hashPassword(pw,salt);
-    if(h.length!==hash.length) return false;
-    var d=0; for(var i=0;i<h.length;i++) d|=h.charCodeAt(i)^hash.charCodeAt(i);
-    return d===0;
-  }
+var fbApp = null, fbAuth = null, fbDb = null;
+
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDuPx5JJcWWNxeO1Cw1NZ6-Pshx3-EsUKU",
+  authDomain: "equilibrium-4d949.firebaseapp.com",
+  databaseURL: "https://equilibrium-4d949-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "equilibrium-4d949",
+  storageBucket: "equilibrium-4d949.firebasestorage.app",
+  messagingSenderId: "393269125718",
+  appId: "1:393269125718:web:ac041b5684f0f371f091f7"
+};
+
+function initFirebase() {
+  if (fbApp) return true;
+  try {
+    fbApp  = firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb   = firebase.database();
+    return true;
+  } catch(e) { console.error('Firebase init failed:', e); return false; }
+}
+
+// ═══════════════════════════════════════════════
+//  LOCAL STORAGE — per-user cache only
+// ═══════════════════════════════════════════════
+var LS = {
+  getSession:   function(){ try{return JSON.parse(localStorage.getItem('eq_session')||'null')}catch(e){return null} },
+  saveSession:  function(s){ localStorage.setItem('eq_session', JSON.stringify(s)); },
+  clearSession: function(){ localStorage.removeItem('eq_session'); }
 };
 
 // ═══════════════════════════════════════════════
-//  DB
+//  FRESH DATA
 // ═══════════════════════════════════════════════
-var DB = {
-  getUsers:    function(){ try{return JSON.parse(localStorage.getItem('eq_users')||'{}')}catch(e){return{}} },
-  saveUsers:   function(u){ localStorage.setItem('eq_users',JSON.stringify(u)); },
-  getSession:  function(){ try{return JSON.parse(localStorage.getItem('eq_session')||'null')}catch(e){return null} },
-  saveSession: function(s){ localStorage.setItem('eq_session',JSON.stringify(s)); },
-  clearSession:function(){ localStorage.removeItem('eq_session'); }
-};
+function freshData() {
+  return { tasks:[], reminders:[], medications:[], daySlots:{}, workSlots:[], parking:[], flashcards:[], files:[], subjects:[] };
+}
 
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
 var appRole = 'student';
-var currentUser = null;
-var nextId = 200;
-var selectedDay = 0;       // 0–13 index within current fortnight window
-var fortnightStart = 0;    // day offset of window start relative to today
-
-// Fortnight: object keyed 0–13 for each day slot array
-function makeFortnight() {
-  var ft = {};
-  for(var i=0;i<14;i++) ft[i]=[];
-  ft[0]=[{id:10,time:'09:00',title:'Maths Lecture',sub:'Room 204',color:'purple'},{id:11,time:'11:00',title:'Biology Lab',sub:'Science Block B',color:'green'},{id:12,time:'13:00',title:'Lunch',sub:'Cafeteria',color:'teal'}];
-  ft[1]=[{id:13,time:'10:00',title:'History Seminar',sub:'Room 101',color:'red'},{id:14,time:'14:00',title:'Library Study',sub:'Main Library',color:'purple'}];
-  ft[2]=[{id:15,time:'09:30',title:'Physics Tutorial',sub:'Lab 3',color:'green'},{id:16,time:'12:00',title:'Group Project',sub:'Room 205',color:'teal'}];
-  ft[4]=[{id:17,time:'09:00',title:'English Literature',sub:'Block A',color:'purple'},{id:18,time:'15:00',title:'Sports',sub:'Sports Hall',color:'green'}];
-  ft[7]=[{id:19,time:'09:00',title:'Maths Lecture',sub:'Room 204',color:'purple'},{id:20,time:'11:00',title:'Chemistry',sub:'Lab 1',color:'teal'}];
-  ft[9]=[{id:21,time:'10:00',title:'Biology Lecture',sub:'Lecture Hall B',color:'green'}];
-  ft[11]=[{id:22,time:'14:00',title:'Revision Session',sub:'Library',color:'red'}];
-  return ft;
-}
-
-var data = {
-  tasks: [
-    {id:1,text:'Complete biology essay',cat:'study',deadline:'',repeat:'weekly',done:false},
-    {id:2,text:'Take morning vitamins',cat:'health',deadline:'',repeat:'daily',done:false}
-  ],
-  reminders: [
-    {id:1,title:'Morning routine',time:'07:30',date:'',repeat:'daily',color:'#6c5ce7'},
-    {id:2,title:'Weekly revision',time:'14:00',date:'',repeat:'weekly',color:'#4caf50'}
-  ],
-  medications: [
-    {id:1,name:'Vitamin D',dose:'1000IU',time:'08:00',freq:'daily',taken:false},
-    {id:2,name:'Omega-3',dose:'500mg',time:'08:00',freq:'daily',taken:false}
-  ],
-  fortnight: makeFortnight(),
-  workSlots: [
-    {id:30,time:'09:00',title:'Team Standup',location:'Conference Rm 1'},
-    {id:31,time:'13:00',title:'Lunch',location:'Kitchen'}
-  ],
-  parking: ['Level 2, Bay 45 – Main Office'],
-  flashcards: [
-    {id:40,q:'What is photosynthesis?',a:'Plants use sunlight, water & CO₂ to produce glucose and oxygen.',subject:'Biology'},
-    {id:41,q:'Pythagorean theorem?',a:'a² + b² = c², where c is the hypotenuse of a right triangle.',subject:'Maths'}
-  ],
-  files: [],
-  subjects: [
-    {id:50,name:'Biology',emoji:'🧬',color:'#4caf50',lessons:[]},
-    {id:51,name:'Maths',emoji:'📐',color:'#6c5ce7',lessons:[]},
-    {id:52,name:'Physics',emoji:'⚛️',color:'#0984e3',lessons:[]}
-  ]
-};
+var currentUser = null;        // Firebase user object
+var currentUserName = '';
+var nextId = 1;
+var selectedDay = 0;
+var fortnightStart = 0;
 var activeSubjectId = null;
 var swatchColor = '#6c5ce7';
+var data = freshData();
+var saveTimer = null;
+
+// ═══════════════════════════════════════════════
+//  DATA PERSISTENCE — Firebase Realtime Database
+// ═══════════════════════════════════════════════
+function saveData() {
+  if (!currentUser || !fbDb) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() {
+    fbDb.ref('users/' + currentUser.uid).set({ data: data, nextId: nextId, role: appRole, name: currentUserName });
+  }, 800);
+}
+
+function loadUserData() {
+  if (!currentUser || !fbDb) return;
+  fbDb.ref('users/' + currentUser.uid).once('value').then(function(snap) {
+    var d = snap.val();
+    if (d && d.data) {
+      data = d.data;
+      if (!data.daySlots)    data.daySlots = {};
+      if (!data.tasks)       data.tasks = [];
+      if (!data.reminders)   data.reminders = [];
+      if (!data.medications) data.medications = [];
+      if (!data.workSlots)   data.workSlots = [];
+      if (!data.parking)     data.parking = [];
+      if (!data.flashcards)  data.flashcards = [];
+      if (!data.files)       data.files = [];
+      if (!data.subjects)    data.subjects = [];
+      nextId = d.nextId || 1;
+      if (d.role) appRole = d.role;
+      if (d.name) currentUserName = d.name;
+    } else {
+      data = freshData(); nextId = 1;
+    }
+    renderAll();
+  });
+}
+
+function listenRealtime() {
+  if (!currentUser || !fbDb) return;
+  fbDb.ref('users/' + currentUser.uid).on('value', function(snap) {
+    var d = snap.val();
+    if (!d || !d.data) return;
+    // Only apply if we're not mid-edit (no pending save)
+    if (saveTimer) return;
+    data = d.data;
+    if (!data.daySlots) data.daySlots = {};
+    nextId = d.nextId || nextId;
+    if (d.role) appRole = d.role;
+    if (d.name) currentUserName = d.name;
+    renderAll();
+  });
+}
 
 // ═══════════════════════════════════════════════
 //  AUTH
@@ -694,8 +782,7 @@ function chooseRole(r) {
   appRole = r;
   document.getElementById('landing').style.display = 'none';
   document.getElementById('authScreen').style.display = 'flex';
-  switchTab('signin');
-  clearMsg();
+  switchTab('signin'); clearMsg();
 }
 function goBack() {
   document.getElementById('authScreen').style.display = 'none';
@@ -704,70 +791,116 @@ function goBack() {
 }
 function switchTab(tab) {
   var map = {signin:['tabSignIn','panelSignIn'],signup:['tabSignUp','panelSignUp'],forgot:[null,'panelForgot']};
-  ['signin','signup','forgot'].forEach(function(t) {
-    if(map[t][0]) document.getElementById(map[t][0]).classList.toggle('active',t===tab);
-    document.getElementById(map[t][1]).classList.toggle('active',t===tab);
+  ['signin','signup','forgot'].forEach(function(t){
+    if(map[t][0]) document.getElementById(map[t][0]).classList.toggle('active', t===tab);
+    document.getElementById(map[t][1]).classList.toggle('active', t===tab);
   });
   clearMsg();
 }
-function showErr(m){ var e=document.getElementById('authErr');e.textContent=m;e.classList.add('show');document.getElementById('authOk').classList.remove('show'); }
-function showOk(m){ var e=document.getElementById('authOk');e.textContent=m;e.classList.add('show');document.getElementById('authErr').classList.remove('show'); }
-function clearMsg(){ document.getElementById('authErr').classList.remove('show');document.getElementById('authOk').classList.remove('show'); }
-function checkStrength(pw) {
+function showErr(m){ var e=document.getElementById('authErr'); e.textContent=m; e.classList.add('show'); document.getElementById('authOk').classList.remove('show'); }
+function showOk(m) { var e=document.getElementById('authOk'); e.textContent=m; e.classList.add('show'); document.getElementById('authErr').classList.remove('show'); }
+function clearMsg(){ document.getElementById('authErr').classList.remove('show'); document.getElementById('authOk').classList.remove('show'); }
+function checkStrength(pw){
   var s=0;if(pw.length>=8)s++;if(/[A-Z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;
   var f=document.getElementById('strFill'),l=document.getElementById('strLabel');
-  f.style.width=(s*25)+'%';f.style.background=['#e84393','#f7a26a','#f7e26a','#4caf50'][s-1]||'transparent';
+  f.style.width=(s*25)+'%'; f.style.background=['#e84393','#f7a26a','#f7e26a','#4caf50'][s-1]||'transparent';
   l.textContent=s>0?['Weak','Fair','Good','Strong'][s-1]:'';
 }
+
 async function signUp() {
-  var first=document.getElementById('suFirst').value.trim(),last=document.getElementById('suLast').value.trim();
+  var first=document.getElementById('suFirst').value.trim(), last=document.getElementById('suLast').value.trim();
   var email=document.getElementById('suEmail').value.trim().toLowerCase();
-  var pw=document.getElementById('suPw').value,conf=document.getElementById('suConfirm').value;
-  if(!first||!last) return showErr('Please enter your first and last name.');
-  if(!email||!email.includes('@')) return showErr('Please enter a valid email address.');
-  if(pw.length<8) return showErr('Password must be at least 8 characters.');
-  if(pw!==conf) return showErr('Passwords do not match.');
-  var users=DB.getUsers();
-  if(users[email]) return showErr('An account with this email already exists.');
-  var btn=document.getElementById('btnSU'); btn.textContent='Securing…'; btn.disabled=true;
+  var pw=document.getElementById('suPw').value, conf=document.getElementById('suConfirm').value;
+  if (!first||!last)           return showErr('Please enter your first and last name.');
+  if (!email||!email.includes('@')) return showErr('Please enter a valid email address.');
+  if (pw.length<8)             return showErr('Password must be at least 8 characters.');
+  if (pw!==conf)               return showErr('Passwords do not match.');
+  var btn=document.getElementById('btnSU'); btn.textContent='Creating account…'; btn.disabled=true;
   try {
-    var salt=Crypto.generateSalt(),hash=await Crypto.hashPassword(pw,salt);
-    users[email]={name:first+' '+last,email:email,hash:hash,salt:salt,role:appRole};
-    DB.saveUsers(users); DB.saveSession({email:email,name:first+' '+last,role:appRole});
-    currentUser={name:first+' '+last,email:email}; launchApp();
-  } catch(e){ showErr('Account creation failed. Please try again.'); }
+    var cred = await fbAuth.createUserWithEmailAndPassword(email, pw);
+    await cred.user.updateProfile({ displayName: first+' '+last });
+    currentUser = cred.user;
+    currentUserName = first+' '+last;
+    data = freshData(); nextId = 1;
+    saveData();
+    LS.saveSession({ uid: currentUser.uid, name: currentUserName, role: appRole });
+    launchApp();
+  } catch(e) {
+    var msgs = { 'auth/email-already-in-use':'An account with this email already exists.', 'auth/invalid-email':'Invalid email address.', 'auth/weak-password':'Password is too weak.' };
+    showErr(msgs[e.code] || e.message);
+  }
   btn.textContent='Create My Account →'; btn.disabled=false;
 }
+
 async function signIn() {
   var email=document.getElementById('siEmail').value.trim().toLowerCase();
   var pw=document.getElementById('siPw').value;
-  if(!email) return showErr('Please enter your email.');
-  if(!pw) return showErr('Please enter your password.');
-  var users=DB.getUsers(),user=users[email];
-  if(!user) return showErr('No account found with this email.');
-  var btn=document.getElementById('btnSI'); btn.textContent='Verifying…'; btn.disabled=true;
+  if (!email) return showErr('Please enter your email.');
+  if (!pw)    return showErr('Please enter your password.');
+  var btn=document.getElementById('btnSI'); btn.textContent='Signing in…'; btn.disabled=true;
   try {
-    var ok=false;
-    if(user.pw&&!user.hash){ ok=(btoa(unescape(encodeURIComponent(pw)))===user.pw); if(ok){var s=Crypto.generateSalt(),h=await Crypto.hashPassword(pw,s);users[email].hash=h;users[email].salt=s;delete users[email].pw;DB.saveUsers(users);} }
-    else { ok=await Crypto.verify(pw,user.hash,user.salt); }
-    if(!ok){ btn.textContent='Sign In to Equilibrium →';btn.disabled=false;return showErr('Incorrect password.'); }
-    appRole=user.role||appRole; currentUser={name:user.name,email:email};
-    DB.saveSession({email:email,name:user.name,role:appRole}); launchApp();
-  } catch(e){ showErr('Sign in failed. Please try again.'); }
+    var cred = await fbAuth.signInWithEmailAndPassword(email, pw);
+    currentUser = cred.user;
+    currentUserName = cred.user.displayName || email.split('@')[0];
+    appRole = appRole;
+    LS.saveSession({ uid: currentUser.uid, name: currentUserName, role: appRole });
+    await loadUserDataAndLaunch();
+  } catch(e) {
+    var msgs = { 'auth/user-not-found':'No account found with this email.', 'auth/wrong-password':'Incorrect password.', 'auth/invalid-credential':'Incorrect email or password.', 'auth/invalid-email':'Invalid email address.' };
+    showErr(msgs[e.code] || e.message);
+  }
   btn.textContent='Sign In to Equilibrium →'; btn.disabled=false;
 }
-function sendReset() {
-  var email=document.getElementById('fgEmail').value.trim().toLowerCase();
-  if(!email||!email.includes('@')) return showErr('Please enter a valid email.');
-  if(!DB.getUsers()[email]) return showErr('No account found with this email.');
-  showOk('Reset link sent to '+email+' (connect an email service in production).');
+
+async function loadUserDataAndLaunch() {
+  // Fetch data before launching so the app loads with correct state
+  try {
+    var snap = await fbDb.ref('users/' + currentUser.uid).once('value');
+    var d = snap.val();
+    if (d && d.data) {
+      data = d.data;
+      if (!data.daySlots)    data.daySlots = {};
+      if (!data.tasks)       data.tasks = [];
+      if (!data.reminders)   data.reminders = [];
+      if (!data.medications) data.medications = [];
+      if (!data.workSlots)   data.workSlots = [];
+      if (!data.parking)     data.parking = [];
+      if (!data.flashcards)  data.flashcards = [];
+      if (!data.files)       data.files = [];
+      if (!data.subjects)    data.subjects = [];
+      nextId = d.nextId || 1;
+      if (d.role) appRole = d.role;
+      if (d.name && d.name !== currentUserName) currentUserName = d.name;
+    } else {
+      data = freshData(); nextId = 1;
+    }
+  } catch(e) { data = freshData(); }
+  launchApp();
+  // Start live sync after launch
+  listenRealtime();
 }
+
+async function sendReset() {
+  var email = document.getElementById('fgEmail').value.trim().toLowerCase();
+  if (!email||!email.includes('@')) return showErr('Please enter a valid email address.');
+  try {
+    await fbAuth.sendPasswordResetEmail(email);
+    showOk('✅ Password reset email sent to ' + email + '. Check your inbox (and spam folder).');
+  } catch(e) {
+    var msgs = { 'auth/user-not-found':'No account found with this email.', 'auth/invalid-email':'Invalid email address.' };
+    showErr(msgs[e.code] || 'Could not send reset email. Please try again.');
+  }
+}
+
 function logout() {
-  if(!confirm('Sign out of Equilibrium?')) return;
-  DB.clearSession(); currentUser=null;
-  document.getElementById('app').style.display='none';
-  document.getElementById('authScreen').style.display='none';
-  document.getElementById('landing').style.display='flex';
+  if (!confirm('Sign out of Equilibrium?')) return;
+  if (fbDb && currentUser) fbDb.ref('users/' + currentUser.uid).off();
+  fbAuth.signOut();
+  LS.clearSession();
+  currentUser = null; data = freshData();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
   closeSidebar();
 }
 
@@ -775,55 +908,64 @@ function logout() {
 //  LAUNCH
 // ═══════════════════════════════════════════════
 function launchApp() {
-  document.getElementById('authScreen').style.display='none';
-  document.getElementById('landing').style.display='none';
-  document.getElementById('app').style.display='block';
-  var name=currentUser.name,init=name[0].toUpperCase();
-  ['userAvatar','sideAvatar','profileAvatar'].forEach(function(id){ var el=document.getElementById(id);if(el)el.textContent=init; });
-  document.getElementById('sidebarName').textContent=name;
-  document.getElementById('sidebarRole').textContent=appRole==='student'?'🎓 Student':'💼 Professional';
-  document.getElementById('profileName').textContent=name;
-  document.getElementById('profileEmail').textContent=currentUser.email;
-  document.getElementById('profileRole').textContent=appRole==='student'?'🎓 Student':'💼 Professional';
-  document.getElementById('editName').value=name;
-  document.getElementById('editEmail').value=currentUser.email;
-  document.querySelectorAll('.student-only').forEach(function(el){ el.style.display=appRole==='student'?'flex':'none'; });
-  document.querySelectorAll('.worker-only').forEach(function(el){ el.style.display=appRole==='worker'?'flex':'none'; });
-  document.getElementById('navTT').textContent=appRole==='student'?'Timetable':'Daily Schedule';
-  var h=new Date().getHours();
-  document.getElementById('greetMsg').textContent=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤️':'Good evening 🌙';
-  document.getElementById('dateStr').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  var name = currentUserName;
+  var init = (name||'U')[0].toUpperCase();
+  ['userAvatar','sideAvatar','profileAvatar'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=init; });
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarRole').textContent = appRole==='student' ? '🎓 Student' : '💼 Professional';
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  document.getElementById('profileRole').textContent = appRole==='student' ? '🎓 Student' : '💼 Professional';
+  document.getElementById('editName').value = name;
+  document.getElementById('editEmail').value = currentUser.email;
+  var syncEl = document.getElementById('syncEmail'); if(syncEl) syncEl.textContent = currentUser.email;
+  document.querySelectorAll('.student-only').forEach(function(el){ el.style.display = appRole==='student'?'flex':'none'; });
+  document.querySelectorAll('.worker-only').forEach(function(el){ el.style.display = appRole==='worker'?'flex':'none'; });
+  document.getElementById('navTT').textContent = appRole==='student' ? 'Timetable' : 'Daily Schedule';
+  var h = new Date().getHours();
+  document.getElementById('greetMsg').textContent = h<12 ? 'Good morning ☀️' : h<17 ? 'Good afternoon 🌤️' : 'Good evening 🌙';
+  document.getElementById('dateStr').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   renderAll(); showPage('overview');
 }
 
-window.addEventListener('DOMContentLoaded',function(){
-  try {
-    var s=DB.getSession();
-    if(s&&s.email&&s.name&&s.email.includes('@')){
-      var users=DB.getUsers();
-      if(users[s.email]){ currentUser={name:s.name,email:s.email};appRole=s.role||'student';launchApp();return; }
+window.addEventListener('DOMContentLoaded', function() {
+  if (!initFirebase()) {
+    alert('Firebase failed to initialise. Please check your connection and refresh.');
+    return;
+  }
+  // Firebase ready — check auth state
+  fbAuth.onAuthStateChanged(function(user) {
+    if (user) {
+      currentUser = user;
+      currentUserName = user.displayName || user.email.split('@')[0];
+      var sess = LS.getSession();
+      if (sess && sess.role) appRole = sess.role;
+      loadUserDataAndLaunch();
+    } else {
+      document.getElementById('landing').style.display = 'flex';
     }
-  } catch(e){}
-  DB.clearSession();
-  document.getElementById('landing').style.display='flex';
+  });
 });
 
 // ═══════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════
-function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show'); }
-function closeSidebar(){ document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show'); }
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var el=document.getElementById('page-'+id); if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var el = document.getElementById('page-'+id); if(el) el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){
-    if(n.getAttribute('onclick')&&n.getAttribute('onclick').indexOf("'"+id+"'")>-1) n.classList.add('active');
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'"+id+"'")>-1) n.classList.add('active');
   });
   var titles={overview:'Overview',timetable:appRole==='student'?'Timetable':'Daily Schedule',tasks:'Tasks',reminders:'Reminders',medications:'Medications',subjects:'Subjects',lessons:'Lessons',flashcards:'Flashcards',workschedule:'Work Schedule',profile:'My Profile',subscription:'Subscription'};
-  document.getElementById('pageTitle').textContent=titles[id]||id;
+  document.getElementById('pageTitle').textContent = titles[id] || id;
   closeSidebar(); renderAll();
-  if(id==='subjects'){ closeSubjDetail(); renderSubjects(); }
+  if (id==='subjects') { closeSubjDetail(); renderSubjects(); }
 }
 
 // ═══════════════════════════════════════════════
@@ -838,60 +980,60 @@ function renderAll() {
 // ═══════════════════════════════════════════════
 //  TASKS
 // ═══════════════════════════════════════════════
-var catIcons={work:'💼',study:'📚',home:'🏠',health:'❤️'};
+var catIcons = { work:'💼', study:'📚', home:'🏠', health:'❤️' };
 function renderTasks() {
-  var list=document.getElementById('taskList'); if(!list) return;
-  var done=data.tasks.filter(function(t){return t.done;}).length;
-  list.innerHTML=data.tasks.map(function(t){
+  var list = document.getElementById('taskList'); if(!list) return;
+  var done = data.tasks.filter(function(t){ return t.done; }).length;
+  list.innerHTML = data.tasks.map(function(t){
     return '<div class="task-item">'
       +'<div class="task-check'+(t.done?' done':'')+'" onclick="toggleTask('+t.id+')"></div>'
-      +'<div class="task-text'+(t.done?' done':'')+'">'+((catIcons[t.cat]||'')+' '+t.text)+'</div>'
+      +'<div class="task-text" style="'+(t.done?'text-decoration:line-through;color:var(--text3)':'')+'">'+((catIcons[t.cat]||'')+' '+t.text)+'</div>'
       +'<div class="task-meta">'
-      +(t.deadline?'<span class="task-dl">📅 '+t.deadline+'</span>':'')
-      +(t.repeat?'<span class="badge bp" style="font-size:.7rem">🔁 '+t.repeat+'</span>':'')
+      +(t.deadline ? '<span class="task-dl">📅 '+t.deadline+'</span>' : '')
+      +(t.repeat ? '<span class="badge bp" style="font-size:.7rem">🔁 '+t.repeat+'</span>' : '')
       +'<button onclick="removeTask('+t.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem">✕</button>'
       +'</div></div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No tasks yet!</p>';
-  var pb=document.getElementById('pendingBadge'),db=document.getElementById('doneBadge');
-  if(pb) pb.textContent=(data.tasks.length-done)+' pending';
-  if(db) db.textContent=done+' done';
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No tasks yet — add one below!</p>';
+  var pb=document.getElementById('pendingBadge'), db=document.getElementById('doneBadge');
+  if(pb) pb.textContent = (data.tasks.length-done)+' pending';
+  if(db) db.textContent = done+' done';
 }
 function addTask() {
-  var t=document.getElementById('taskInput').value.trim(); if(!t) return;
+  var t = document.getElementById('taskInput').value.trim(); if(!t) return;
   data.tasks.push({id:nextId++,text:t,cat:document.getElementById('taskCat').value,deadline:document.getElementById('taskDeadline').value,repeat:document.getElementById('taskRepeat').value,done:false});
-  document.getElementById('taskInput').value=''; renderTasks(); renderOverview();
+  document.getElementById('taskInput').value=''; renderTasks(); renderOverview(); saveData();
 }
-function toggleTask(id){ var t=data.tasks.find(function(x){return x.id===id;}); if(t){t.done=!t.done;renderTasks();renderOverview();} }
-function removeTask(id){ data.tasks=data.tasks.filter(function(t){return t.id!==id;}); renderTasks();renderOverview(); }
+function toggleTask(id){ var t=data.tasks.find(function(x){return x.id===id;}); if(t){t.done=!t.done; renderTasks(); renderOverview(); saveData();} }
+function removeTask(id){ data.tasks=data.tasks.filter(function(t){return t.id!==id;}); renderTasks(); renderOverview(); saveData(); }
 
 // ═══════════════════════════════════════════════
 //  REMINDERS
 // ═══════════════════════════════════════════════
 function renderReminders() {
-  var list=document.getElementById('remList'); if(!list) return;
-  list.innerHTML=data.reminders.map(function(r){
+  var list = document.getElementById('remList'); if(!list) return;
+  list.innerHTML = data.reminders.map(function(r){
     return '<div class="rem-item">'
       +'<div class="rem-dot" style="background:'+r.color+'"></div>'
       +'<div class="rem-info"><div class="rem-title">'+r.title+(r.repeat?' <span style="font-size:.72rem;color:var(--accent)">🔁 '+r.repeat+'</span>':'')+'</div>'
       +'<div class="rem-time">'+r.time+(r.date?' · '+r.date:'')+'</div></div>'
       +'<button onclick="removeReminder('+r.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer">✕</button>'
       +'</div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No reminders yet.</p>';
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No reminders yet.</p>';
 }
 function addReminder() {
-  var t=document.getElementById('remTitle').value.trim(); if(!t) return;
+  var t = document.getElementById('remTitle').value.trim(); if(!t) return;
   data.reminders.push({id:nextId++,title:t,time:document.getElementById('remTime').value,date:document.getElementById('remDate').value,repeat:document.getElementById('remRepeat').value,color:document.getElementById('remColor').value});
-  document.getElementById('remTitle').value=''; renderReminders(); renderOverview();
+  document.getElementById('remTitle').value=''; renderReminders(); renderOverview(); saveData();
 }
-function removeReminder(id){ data.reminders=data.reminders.filter(function(r){return r.id!==id;}); renderReminders();renderOverview(); }
+function removeReminder(id){ data.reminders=data.reminders.filter(function(r){return r.id!==id;}); renderReminders(); renderOverview(); saveData(); }
 
 // ═══════════════════════════════════════════════
 //  MEDICATIONS
 // ═══════════════════════════════════════════════
 function renderMeds() {
-  var list=document.getElementById('medList'); if(!list) return;
-  var icons=['💊','💉','🩺','🧴'];
-  list.innerHTML=data.medications.map(function(m,i){
+  var list = document.getElementById('medList'); if(!list) return;
+  var icons = ['💊','💉','🩺','🧴'];
+  list.innerHTML = data.medications.map(function(m,i){
     return '<div class="med-item">'
       +'<div class="med-icon" style="background:rgba(108,92,231,.1)">'+icons[i%icons.length]+'</div>'
       +'<div class="med-info"><div class="med-name">'+m.name+' <span style="color:var(--text3);font-size:.8rem">'+m.dose+'</span></div>'
@@ -899,55 +1041,39 @@ function renderMeds() {
       +'<button class="btn btn-sm '+(m.taken?'btn-p':'btn-o')+'" onclick="toggleMed('+m.id+')">'+(m.taken?'✓ Taken':'Take')+'</button>'
       +'<button onclick="removeMed('+m.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:4px">✕</button>'
       +'</div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No medications added.</p>';
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No medications added.</p>';
 }
 function addMed() {
-  var n=document.getElementById('medName').value.trim(); if(!n) return;
+  var n = document.getElementById('medName').value.trim(); if(!n) return;
   data.medications.push({id:nextId++,name:n,dose:document.getElementById('medDose').value,time:document.getElementById('medTime').value,freq:document.getElementById('medFreq').value,taken:false});
-  document.getElementById('medName').value=''; document.getElementById('medDose').value=''; renderMeds();renderOverview();
+  document.getElementById('medName').value=''; document.getElementById('medDose').value=''; renderMeds(); renderOverview(); saveData();
 }
-function toggleMed(id){ var m=data.medications.find(function(x){return x.id===id;}); if(m){m.taken=!m.taken;renderMeds();renderOverview();} }
-function removeMed(id){ data.medications=data.medications.filter(function(m){return m.id!==id;}); renderMeds();renderOverview(); }
+function toggleMed(id){ var m=data.medications.find(function(x){return x.id===id;}); if(m){m.taken=!m.taken; renderMeds(); renderOverview(); saveData();} }
+function removeMed(id){ data.medications=data.medications.filter(function(m){return m.id!==id;}); renderMeds(); renderOverview(); saveData(); }
 
 // ═══════════════════════════════════════════════
 //  FORTNIGHTLY TIMETABLE
 // ═══════════════════════════════════════════════
-var colorHex={purple:'#6c5ce7',green:'#4caf50',teal:'#00b894',red:'#e84393'};
-
-function getDateForIndex(idx) {
-  // idx is 0-13 within the current window; fortnightStart is window offset from today
-  var d=new Date(); d.setDate(d.getDate()+fortnightStart+idx); return d;
-}
-function isTodayIndex(idx) { return fortnightStart===0 && idx===0; }
+var colorHex = {purple:'#6c5ce7',green:'#4caf50',teal:'#00b894',red:'#e84393'};
+function getDateForIndex(idx){ var d=new Date(); d.setDate(d.getDate()+fortnightStart+idx); return d; }
+function isTodayIndex(idx){ return fortnightStart===0&&idx===0; }
 function fmtShort(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
 function fmtDayName(d){ return d.toLocaleDateString('en-GB',{weekday:'short'}); }
-
 function gotoToday(){ fortnightStart=0; selectedDay=0; renderTimetable(); }
 function prevFortnight(){ fortnightStart-=14; selectedDay=0; renderTimetable(); }
 function nextFortnight(){ fortnightStart+=14; selectedDay=0; renderTimetable(); }
 function selectDay(idx){ selectedDay=idx; renderTimetable(); }
-
-function getDaySlots(idx) {
-  // Compute real day offset from today
-  var realOffset = fortnightStart + idx;
-  // Store slots keyed by real day offset (as string)
-  var key = String(realOffset);
+function getDaySlots(idx){
   if(!data.daySlots) data.daySlots={};
-  // Seed today's slots from fortnight sample data (offset 0..13 from original)
-  if(realOffset>=0 && realOffset<=13 && !data.daySlots[key]) {
-    data.daySlots[key] = (data.fortnight[realOffset]||[]).slice();
-  }
+  var key=String(fortnightStart+idx);
   if(!data.daySlots[key]) data.daySlots[key]=[];
   return data.daySlots[key];
 }
-
 function renderTimetable() {
-  // Day strip
-  var strip=document.getElementById('dayStrip'); if(!strip) return;
-  var html='';
+  var strip = document.getElementById('dayStrip'); if(!strip) return;
+  var html = '';
   for(var i=0;i<14;i++){
-    var d=getDateForIndex(i);
-    var slots=getDaySlots(i);
+    var d=getDateForIndex(i), slots=getDaySlots(i);
     var cls='day-chip'+(isTodayIndex(i)?' dc-today':'')+(i===selectedDay?' dc-sel':'');
     html+='<div class="'+cls+'" onclick="selectDay('+i+')">'
       +'<div class="dc-name">'+fmtDayName(d)+'</div>'
@@ -956,30 +1082,23 @@ function renderTimetable() {
       +'</div>';
   }
   strip.innerHTML=html;
-
-  // Selected day slots
   var el=document.getElementById('ttSlots'); if(!el) return;
   var selSlots=getDaySlots(selectedDay).slice().sort(function(a,b){return a.time.localeCompare(b.time);});
-  var selDate=getDateForIndex(selectedDay);
-  var titleEl=document.getElementById('selDayTitle');
-  var countEl=document.getElementById('selDayCount');
-  var relOff=fortnightStart+selectedDay;
-  var label = relOff===0?'Today': relOff===1?'Tomorrow': fmtShort(selDate);
+  var selDate=getDateForIndex(selectedDay), relOff=fortnightStart+selectedDay;
+  var label=relOff===0?'Today':relOff===1?'Tomorrow':fmtShort(selDate);
+  var titleEl=document.getElementById('selDayTitle'), countEl=document.getElementById('selDayCount');
   if(titleEl) titleEl.textContent='🗓️ '+label+' — '+selDate.toLocaleDateString('en-GB',{weekday:'long'});
   if(countEl) countEl.textContent=selSlots.length+' event'+(selSlots.length!==1?'s':'');
-
   el.innerHTML=selSlots.map(function(s){
     return '<div class="time-slot">'
       +'<div class="time-label">'+s.time+'</div>'
       +'<div class="slot-event s-'+s.color+'"><div class="slot-title">'+s.title+'</div>'+(s.sub?'<div class="slot-sub">📍 '+s.sub+'</div>':'')+'</div>'
-      +'<button onclick="removeSlot(\''+String(fortnightStart+selectedDay)+'\','+s.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:6px;font-size:1rem">✕</button>'
+      +'<button onclick="removeSlot('+String(fortnightStart+selectedDay)+','+s.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:6px;font-size:1rem">✕</button>'
       +'</div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No events for this day. Add one below!</p>';
-
-  // Day progress
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No events for this day. Add one below!</p>';
   var dp=document.getElementById('dayProgress'); if(!dp) return;
   if(relOff===0){
-    var now=new Date(),pct=Math.min(100,Math.max(0,((now.getHours()+(now.getMinutes()/60)-6)/14)*100));
+    var now=new Date(), pct=Math.min(100,Math.max(0,((now.getHours()+(now.getMinutes()/60)-6)/14)*100));
     dp.innerHTML='<p style="font-size:.82rem;color:var(--text2);margin-bottom:12px">Day progress (6am–8pm)</p>'
       +'<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:var(--accent)"></div></div>'
       +'<p style="font-size:.78rem;color:var(--text3);margin-top:6px">'+Math.round(pct)+'% of your day has passed</p>'
@@ -989,22 +1108,17 @@ function renderTimetable() {
       +'<p style="font-size:.82rem;color:var(--text2);margin-top:10px"><strong>'+selSlots.length+'</strong> event'+(selSlots.length!==1?'s':'')+' scheduled.</p>'
       +'<button class="btn btn-o btn-sm" style="margin-top:14px" onclick="gotoToday()">← Back to Today</button>';
   }
-
-  // Upcoming days — scan next 14 days from today for events
   var ud=document.getElementById('upcomingDays'); if(!ud) return;
-  if(!data.daySlots) data.daySlots={};
-  var uhtml='';var shown=0;
+  var uhtml='', shown=0;
   for(var j=1;j<=14&&shown<5;j++){
-    var key=String(j);
-    // Seed from sample data
-    if(j<=13&&!data.daySlots[key]) data.daySlots[key]=(data.fortnight[j]||[]).slice();
-    var dayEv=data.daySlots[key]||[];
+    var ukey=String(j);
+    if(!data.daySlots[ukey]) data.daySlots[ukey]=[];
+    var dayEv=data.daySlots[ukey];
     if(!dayEv.length) continue;
     shown++;
     var dd=new Date(); dd.setDate(dd.getDate()+j);
     var dayLabel=j===1?'Tomorrow':fmtShort(dd);
-    uhtml+='<div class="upcoming-day">'
-      +'<div class="ud-head">'
+    uhtml+='<div class="upcoming-day"><div class="ud-head">'
       +'<span class="ud-label" onclick="fortnightStart=0;selectedDay='+j+';renderTimetable()">'+dayLabel+'</span>'
       +'<span class="ud-date">'+dd.toLocaleDateString('en-GB',{weekday:'short'})+'</span>'
       +'</div>';
@@ -1013,66 +1127,62 @@ function renderTimetable() {
     });
     uhtml+='</div>';
   }
-  ud.innerHTML=uhtml||'<p style="color:var(--text3);font-size:.85rem;padding:8px 0">No upcoming events in the next two weeks.</p>';
+  ud.innerHTML=uhtml||'<p style="color:var(--text3);font-size:.85rem;padding:8px 0">No upcoming events.</p>';
 }
-
-function addSlot() {
+function addSlot(){
   var t=document.getElementById('slotTitle').value.trim(); if(!t) return;
   if(!data.daySlots) data.daySlots={};
   var key=String(fortnightStart+selectedDay);
   if(!data.daySlots[key]) data.daySlots[key]=[];
   data.daySlots[key].push({id:nextId++,time:document.getElementById('slotTime').value,title:t,sub:document.getElementById('slotSub').value,color:document.getElementById('slotColor').value});
   document.getElementById('slotTitle').value=''; document.getElementById('slotSub').value='';
-  renderTimetable(); renderOverview();
+  renderTimetable(); renderOverview(); saveData();
 }
-function removeSlot(key,id) {
+function removeSlot(key,id){
   if(!data.daySlots||!data.daySlots[key]) return;
   data.daySlots[key]=data.daySlots[key].filter(function(s){return s.id!==id;});
-  renderTimetable(); renderOverview();
+  renderTimetable(); renderOverview(); saveData();
 }
 
 // ═══════════════════════════════════════════════
 //  WORK SCHEDULE
 // ═══════════════════════════════════════════════
-function renderWorkSlots() {
+function renderWorkSlots(){
   var el=document.getElementById('workSlots'); if(!el) return;
   el.innerHTML=data.workSlots.map(function(s){
     return '<div class="time-slot"><div class="time-label">'+s.time+'</div>'
       +'<div class="slot-event s-purple"><div class="slot-title">'+s.title+'</div>'+(s.location?'<div class="slot-sub">📍 '+s.location+'</div>':'')+'</div>'
       +'<button onclick="removeWorkSlot('+s.id+')" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:6px">✕</button></div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No work events yet.</p>';
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No work events yet.</p>';
 }
-function addWorkSlot() {
+function addWorkSlot(){
   var t=document.getElementById('workTitle').value.trim(); if(!t) return;
   data.workSlots.push({id:nextId++,time:document.getElementById('workTime').value,title:t,location:document.getElementById('workLoc').value});
-  document.getElementById('workTitle').value=''; document.getElementById('workLoc').value=''; renderWorkSlots();
+  document.getElementById('workTitle').value=''; document.getElementById('workLoc').value=''; renderWorkSlots(); saveData();
 }
-function removeWorkSlot(id){ data.workSlots=data.workSlots.filter(function(s){return s.id!==id;}); renderWorkSlots(); }
-
-function renderParking() {
+function removeWorkSlot(id){ data.workSlots=data.workSlots.filter(function(s){return s.id!==id;}); renderWorkSlots(); saveData(); }
+function renderParking(){
   var el=document.getElementById('parkList'); if(!el) return;
   el.innerHTML=data.parking.map(function(p,i){
     return '<div class="rem-item"><div class="rem-dot" style="background:var(--accent2)"></div><div class="rem-info"><div class="rem-title">📍 '+p+'</div></div><button onclick="removeParking('+i+')" style="background:none;border:none;color:var(--text3);cursor:pointer">✕</button></div>';
-  }).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No saved locations.</p>';
+  }).join('') || '<p style="color:var(--text3);font-size:.85rem;padding:12px 0">No saved locations.</p>';
 }
-function addParking() { var n=document.getElementById('parkNote').value.trim();if(!n)return;data.parking.push(n);document.getElementById('parkNote').value='';renderParking(); }
-function removeParking(i){ data.parking.splice(i,1);renderParking(); }
+function addParking(){ var n=document.getElementById('parkNote').value.trim();if(!n)return; data.parking.push(n); document.getElementById('parkNote').value=''; renderParking(); saveData(); }
+function removeParking(i){ data.parking.splice(i,1); renderParking(); saveData(); }
 
 // ═══════════════════════════════════════════════
 //  FLASHCARDS
 // ═══════════════════════════════════════════════
-function renderFlashcards() {
+function flipCard(el){ el.classList.toggle('flipped'); }
+function renderFlashcards(){
   var grid=document.getElementById('fcGrid'); if(!grid) return;
   grid.innerHTML=data.flashcards.map(function(f){
-    return '<div class="flashcard" onclick="this.classList.toggle(\'flipped\')">'
-      +'<div class="fc-label">❓ Question</div>'
-      +'<div class="fc-body">'+f.q+'</div>'
-      +'<div class="fc-ans">💡 '+f.a+'</div>'
-      +'<div class="fc-subject">'+f.subject+'</div>'
-      +'</div>';
-  }).join('')||'<p style="color:var(--text3)">No flashcards yet. Go to Lessons to generate some!</p>';
+    return '<div class="flashcard" onclick="flipCard(this)">'
+      +'<div class="fc-label">❓ Question</div><div class="fc-body">'+f.q+'</div>'
+      +'<div class="fc-ans">💡 '+f.a+'</div><div class="fc-subject">'+f.subject+'</div></div>';
+  }).join('') || '<p style="color:var(--text3)">No flashcards yet. Go to Lessons to generate some!</p>';
 }
-async function generateFlashcards() {
+async function generateFlashcards(){
   var subject=document.getElementById('genSubject').value.trim()||'General';
   var topic=document.getElementById('genTopic').value.trim()||'key concepts';
   var panel=document.getElementById('aiPanel');
@@ -1084,28 +1194,29 @@ async function generateFlashcards() {
     var text=d.content.map(function(c){return c.text||'';}).join('').replace(/```json|```/g,'').trim();
     var cards=JSON.parse(text);
     cards.forEach(function(c){data.flashcards.push({id:nextId++,q:c.q,a:c.a,subject:c.subject});});
-    panel.innerHTML='<div style="color:var(--accent3);font-size:.88rem">✨ '+cards.length+' flashcards generated! <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage(\'flashcards\')">View Flashcards →</span></div>';
-    renderFlashcards();
+    panel.innerHTML='<div style="color:var(--accent3);font-size:.88rem">✨ '+cards.length+' flashcards generated! <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage(&apos;flashcards&apos;)">View →</span></div>';
+    renderFlashcards(); saveData();
   } catch(e){ panel.innerHTML='<div style="color:var(--accent4);font-size:.88rem">⚠️ Could not generate flashcards. Please try again.</div>'; }
 }
 
 // ═══════════════════════════════════════════════
 //  FILES
 // ═══════════════════════════════════════════════
-function handleFiles(files) {
+function handleFiles(files){
   var icons={pdf:'📄',pptx:'📊',ppt:'📊',jpg:'🖼️',jpeg:'🖼️',png:'🖼️'};
   Array.from(files).forEach(function(f){var ext=f.name.split('.').pop().toLowerCase();data.files.push({name:f.name,size:(f.size/1024).toFixed(1)+'KB',icon:icons[ext]||'📎'});});
   var fl=document.getElementById('fileList'); if(!fl) return;
   fl.innerHTML=data.files.map(function(f){return '<div class="file-item"><span>'+f.icon+'</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+f.name+'</span><span style="font-size:.75rem;color:var(--text3)">'+f.size+'</span></div>';}).join('');
+  saveData();
 }
 
 // ═══════════════════════════════════════════════
 //  OVERVIEW
 // ═══════════════════════════════════════════════
-function renderOverview() {
+function renderOverview(){
   var pending=data.tasks.filter(function(t){return !t.done;}).length;
   var meds=data.medications.filter(function(m){return !m.taken;}).length;
-  var todaySlots=getDaySlots?getDaySlots(0):[];
+  var todaySlots=data.daySlots&&data.daySlots['0']?data.daySlots['0']:[];
   if(appRole==='worker') todaySlots=data.workSlots;
   var st=document.getElementById('statsRow');
   if(st) st.innerHTML=
@@ -1115,13 +1226,12 @@ function renderOverview() {
   var ot=document.getElementById('ovTasks');
   if(ot){
     var top=data.tasks.filter(function(t){return !t.done;}).slice(0,4);
-    ot.innerHTML=top.map(function(t){return '<div class="task-item"><div class="task-check" onclick="toggleTask('+t.id+')"></div><div class="task-text">'+((catIcons[t.cat]||'')+' '+t.text)+'</div>'+(t.deadline?'<span class="task-dl">📅 '+t.deadline+'</span>':'')+'</div>';}).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:8px 0">All tasks done! 🎉</p>';
+    ot.innerHTML=top.map(function(t){return '<div class="task-item"><div class="task-check" onclick="toggleTask('+t.id+')"></div><div class="task-text">'+(catIcons[t.cat]||'')+' '+t.text+'</div>'+(t.deadline?'<span class="task-dl">📅 '+t.deadline+'</span>':'')+'</div>';}).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:8px 0">All tasks done! 🎉</p>';
     var bc=document.getElementById('taskBadge'); if(bc) bc.textContent=pending;
   }
   var os=document.getElementById('ovSchedule');
   if(os){
-    var src=appRole==='worker'?data.workSlots:todaySlots;
-    var sorted=src.slice().sort(function(a,b){return a.time.localeCompare(b.time);}).slice(0,4);
+    var sorted=todaySlots.slice().sort(function(a,b){return a.time.localeCompare(b.time);}).slice(0,4);
     os.innerHTML=sorted.map(function(s){return '<div class="time-slot"><div class="time-label">'+s.time+'</div><div class="slot-event s-'+(s.color||'purple')+'"><div class="slot-title">'+s.title+'</div>'+((s.sub||s.location)?'<div class="slot-sub">📍 '+(s.sub||s.location)+'</div>':'')+'</div></div>';}).join('')||'<p style="color:var(--text3);font-size:.85rem;padding:8px 0">Nothing scheduled today.</p>';
   }
   var om=document.getElementById('ovMeds');
@@ -1133,29 +1243,21 @@ function renderOverview() {
 // ═══════════════════════════════════════════════
 //  SUBJECTS
 // ═══════════════════════════════════════════════
-function pickSwatch(el) {
-  document.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('sel');});
-  el.classList.add('sel'); swatchColor=el.getAttribute('data-c');
-}
-function toggleNFF() {
-  var f=document.getElementById('nffForm');
-  f.style.display=f.style.display==='none'?'block':'none';
-  if(f.style.display==='block') document.getElementById('nfName').focus();
-}
-function createSubject() {
-  var name=document.getElementById('nfName').value.trim();
-  var emoji=document.getElementById('nfEmoji').value.trim()||'📁';
+function pickSwatch(el){ document.querySelectorAll('.swatch').forEach(function(s){s.classList.remove('sel');}); el.classList.add('sel'); swatchColor=el.getAttribute('data-c'); }
+function toggleNFF(){ var f=document.getElementById('nffForm');f.style.display=f.style.display==='none'?'block':'none';if(f.style.display==='block')document.getElementById('nfName').focus(); }
+function createSubject(){
+  var name=document.getElementById('nfName').value.trim(), emoji=document.getElementById('nfEmoji').value.trim()||'📁';
   if(!name){alert('Please enter a subject name.');return;}
   data.subjects.push({id:nextId++,name:name,emoji:emoji,color:swatchColor,lessons:[]});
   document.getElementById('nfName').value=''; document.getElementById('nfEmoji').value='';
-  document.getElementById('nffForm').style.display='none'; renderSubjects();
+  document.getElementById('nffForm').style.display='none'; renderSubjects(); saveData();
 }
-function deleteSubject(id,e) {
+function deleteSubject(id,e){
   e.stopPropagation();
   if(!confirm('Delete this subject and all its lessons?')) return;
-  data.subjects=data.subjects.filter(function(s){return s.id!==id;}); renderSubjects();
+  data.subjects=data.subjects.filter(function(s){return s.id!==id;}); renderSubjects(); saveData();
 }
-function openSubjDetail(id) {
+function openSubjDetail(id){
   activeSubjectId=id;
   var subj=data.subjects.find(function(s){return s.id===id;}); if(!subj) return;
   document.getElementById('subjListView').style.display='none';
@@ -1165,17 +1267,16 @@ function openSubjDetail(id) {
   document.getElementById('detailIcon').textContent=subj.emoji;
   renderLessons();
 }
-function closeSubjDetail() {
+function closeSubjDetail(){
   activeSubjectId=null;
   document.getElementById('subjDetail').classList.remove('show');
   document.getElementById('subjListView').style.display='block';
   document.getElementById('subjAiPanel').style.display='none';
 }
-function renderSubjects() {
-  var grid=document.getElementById('subjGrid'),msg=document.getElementById('noSubjMsg');
-  if(!grid) return;
+function renderSubjects(){
+  var grid=document.getElementById('subjGrid'),msg=document.getElementById('noSubjMsg'); if(!grid) return;
   if(!data.subjects.length){grid.innerHTML='';if(msg)msg.style.display='block';return;}
-  if(msg) msg.style.display='none';
+  if(msg)msg.style.display='none';
   grid.innerHTML=data.subjects.map(function(s){
     return '<div class="sf" onclick="openSubjDetail('+s.id+')">'
       +'<button class="sf-del" onclick="deleteSubject('+s.id+',event)">✕</button>'
@@ -1186,82 +1287,183 @@ function renderSubjects() {
       +'</div>';
   }).join('');
 }
-function renderLessons() {
+function renderLessons(){
   var subj=data.subjects.find(function(s){return s.id===activeSubjectId;}); if(!subj) return;
   var list=document.getElementById('lessonList'),noMsg=document.getElementById('noLessonMsg'),count=document.getElementById('detailCount');
-  if(count) count.textContent=subj.lessons.length+' lesson'+(subj.lessons.length!==1?'s':'');
+  if(count)count.textContent=subj.lessons.length+' lesson'+(subj.lessons.length!==1?'s':'');
   if(!subj.lessons.length){if(list)list.innerHTML='';if(noMsg)noMsg.style.display='block';return;}
-  if(noMsg) noMsg.style.display='none';
+  if(noMsg)noMsg.style.display='none';
   var fi={pdf:'📄',pptx:'📊',ppt:'📊',jpg:'🖼️',jpeg:'🖼️',png:'🖼️'};
   list.innerHTML=subj.lessons.map(function(l,i){
-    var ext=l.name.split('.').pop().toLowerCase();
     return '<div class="lesson-item">'
-      +'<div class="lesson-icon">'+(fi[ext]||'📎')+'</div>'
+      +'<div class="lesson-icon">'+(fi[l.name.split('.').pop().toLowerCase()]||'📎')+'</div>'
       +'<div class="lesson-info"><div class="lesson-name">'+l.name+'</div><div class="lesson-meta">'+l.size+' · Added '+l.added+'</div></div>'
       +'<button onclick="removeLesson('+i+')" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 8px">✕</button>'
       +'</div>';
   }).join('');
 }
-function uploadLesson(files) {
+function uploadLesson(files){
   var subj=data.subjects.find(function(s){return s.id===activeSubjectId;}); if(!subj) return;
   var today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   Array.from(files).forEach(function(f){subj.lessons.push({name:f.name,size:(f.size/1024).toFixed(1)+'KB',added:today,type:f.name.split('.').pop().toLowerCase()});});
-  renderLessons(); renderSubjects();
+  renderLessons(); renderSubjects(); saveData();
 }
-function removeLesson(i) {
+function removeLesson(i){
   var subj=data.subjects.find(function(s){return s.id===activeSubjectId;}); if(!subj) return;
   if(!confirm('Remove this lesson?')) return;
-  subj.lessons.splice(i,1); renderLessons(); renderSubjects();
+  subj.lessons.splice(i,1); renderLessons(); renderSubjects(); saveData();
 }
-async function aiFlashcardsSubject() {
+async function aiFlashcardsSubject(){
   var subj=data.subjects.find(function(s){return s.id===activeSubjectId;}); if(!subj) return;
   var panel=document.getElementById('subjAiPanel');
   panel.style.display='block';
   panel.innerHTML='<div class="ai-thinking"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="margin-left:8px">Generating flashcards for '+subj.name+'…</span></div>';
   var lessons=subj.lessons.map(function(l){return l.name;}).join(', ')||'general topics';
   try {
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:'Create exactly 4 flashcards for the subject "'+subj.name+'". Lesson files: '+lessons+'. Reply ONLY with a raw JSON array, no markdown: [{"q":"...","a":"...","subject":"'+subj.name+'"}]'}]})});
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:'Create exactly 4 flashcards for "'+subj.name+'". Lessons: '+lessons+'. Reply ONLY with a raw JSON array: [{"q":"...","a":"...","subject":"'+subj.name+'"}]'}]})});
     var d=await res.json();
     var text=d.content.map(function(c){return c.text||'';}).join('').replace(/```json|```/g,'').trim();
     var cards=JSON.parse(text);
     cards.forEach(function(c){data.flashcards.push({id:nextId++,q:c.q,a:c.a,subject:c.subject});});
-    panel.innerHTML='<div style="color:var(--accent3);font-size:.88rem">✨ '+cards.length+' flashcards generated for '+subj.name+'! <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage(\'flashcards\')">View Flashcards →</span></div>';
-    renderFlashcards();
-  } catch(e){ panel.innerHTML='<div style="color:var(--accent4);font-size:.88rem">⚠️ Could not generate flashcards. Please try again.</div>'; }
+    panel.innerHTML='<div style="color:var(--accent3);font-size:.88rem">✨ '+cards.length+' flashcards generated! <span style="cursor:pointer;text-decoration:underline;color:var(--accent)" onclick="showPage(&apos;flashcards&apos;)">View →</span></div>';
+    renderFlashcards(); saveData();
+  } catch(e){ panel.innerHTML='<div style="color:var(--accent4);font-size:.88rem">⚠️ Could not generate. Please try again.</div>'; }
 }
 
 // ═══════════════════════════════════════════════
 //  PROFILE
 // ═══════════════════════════════════════════════
-function saveProfile() {
-  var name=document.getElementById('editName').value.trim();
-  var newEmail=document.getElementById('editEmail').value.trim().toLowerCase();
-  var pw=document.getElementById('editPw').value;
-  var users=DB.getUsers(),oldEmail=currentUser.email;
-  if(newEmail&&newEmail!==oldEmail&&!newEmail.includes('@')){alert('Please enter a valid email.');return;}
-  if(newEmail&&newEmail!==oldEmail&&users[newEmail]){alert('That email is already taken.');return;}
-  if(name){
-    currentUser.name=name;
-    ['userAvatar','sideAvatar','profileAvatar'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=name[0].toUpperCase();});
-    document.getElementById('sidebarName').textContent=name;
-    document.getElementById('profileName').textContent=name;
+async function saveProfile(){
+  var name  = document.getElementById('editName').value.trim();
+  var email = document.getElementById('editEmail').value.trim().toLowerCase();
+  var pw    = document.getElementById('editPw').value;
+  var msg   = document.getElementById('profileMsg');
+  try {
+    if (name && name !== currentUserName) {
+      await currentUser.updateProfile({ displayName: name });
+      currentUserName = name;
+      ['userAvatar','sideAvatar','profileAvatar'].forEach(function(id){ var el=document.getElementById(id);if(el)el.textContent=name[0].toUpperCase(); });
+      document.getElementById('sidebarName').textContent = name;
+      document.getElementById('profileName').textContent = name;
+    }
+    if (email && email !== currentUser.email) {
+      await currentUser.updateEmail(email);
+      document.getElementById('profileEmail').textContent = email;
+      document.getElementById('editEmail').value = email;
+      var syncEl=document.getElementById('syncEmail');if(syncEl)syncEl.textContent=email;
+    }
+    if (pw && pw.length >= 8) {
+      await currentUser.updatePassword(pw);
+      document.getElementById('editPw').value = '';
+    } else if (pw) {
+      throw new Error('Password must be at least 8 characters.');
+    }
+    saveData();
+    msg.style.color='var(--accent3)'; msg.textContent='✅ Profile updated!'; msg.style.display='block';
+    setTimeout(function(){ msg.style.display='none'; }, 3000);
+  } catch(e) {
+    var friendly = { 'auth/requires-recent-login':'Please sign out and sign back in before changing your email or password.', 'auth/email-already-in-use':'That email is already in use.' };
+    msg.style.color='var(--accent4)'; msg.textContent='❌ '+(friendly[e.code]||e.message); msg.style.display='block';
   }
-  if(newEmail&&newEmail!==oldEmail){
-    users[newEmail]=Object.assign({},users[oldEmail]);
-    delete users[oldEmail]; currentUser.email=newEmail;
-    document.getElementById('profileEmail').textContent=newEmail;
-    DB.saveSession({email:newEmail,name:currentUser.name,role:appRole});
+}
+
+// ═══════════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════════
+function exportData(){
+  var payload=JSON.stringify({data:data,nextId:nextId,role:appRole,exportedAt:new Date().toISOString()},null,2);
+  var blob=new Blob([payload],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download='equilibrium-backup-'+(new Date().toISOString().slice(0,10))+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(input){
+  var file=input.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try {
+      var d=JSON.parse(e.target.result);
+      if(!d.data) throw new Error('Invalid backup file.');
+      if(!confirm('This will replace ALL your current data. Continue?')) return;
+      data=d.data; nextId=d.nextId||nextId;
+      if(!data.daySlots) data.daySlots={};
+      saveData(); renderAll();
+      var m=document.getElementById('importMsg'); m.style.display='block'; m.style.color='var(--accent3)'; m.textContent='✅ Data imported!';
+      setTimeout(function(){m.style.display='none';},4000);
+    } catch(e2){
+      var m=document.getElementById('importMsg'); m.style.display='block'; m.style.color='var(--accent4)'; m.textContent='❌ Invalid backup file.';
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════
+//  DELETE ACCOUNT
+// ═══════════════════════════════════════════════
+async function deleteAccount(){
+  if(!confirm('Are you SURE you want to permanently delete your account and all data? This cannot be undone.')) return;
+  if(!confirm('Final confirmation — delete account forever?')) return;
+  try {
+    // Wipe database first
+    if(fbDb) await fbDb.ref('users/'+currentUser.uid).remove();
+    // Delete Firebase Auth user
+    await currentUser.delete();
+    LS.clearSession();
+    currentUser=null; data=freshData();
+    document.getElementById('app').style.display='none';
+    document.getElementById('landing').style.display='flex';
+    closeSidebar();
+    alert('Your account has been permanently deleted.');
+  } catch(e){
+    var friendly={'auth/requires-recent-login':'Please sign out and sign back in before deleting your account.'};
+    alert('❌ '+(friendly[e.code]||e.message));
   }
-  var target=currentUser.email;
-  if(users[target]){
-    if(name) users[target].name=name;
-    if(pw&&pw.length>=8){
-      (async function(){var salt=Crypto.generateSalt(),hash=await Crypto.hashPassword(pw,salt);users[target].hash=hash;users[target].salt=salt;delete users[target].pw;DB.saveUsers(users);})();
-    } else { DB.saveUsers(users); }
-  }
-  document.getElementById('editPw').value='';
-  var msg=document.getElementById('profileMsg'); msg.style.display='block'; setTimeout(function(){msg.style.display='none';},3000);
 }
 </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg) { console.log('SW registered:', reg.scope); })
+      .catch(function(err) { console.log('SW failed:', err); });
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  PWA INSTALL PROMPT
+// ═══════════════════════════════════════════════
+var deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  var banner = document.getElementById('installBanner');
+  if (banner) { banner.style.display = 'flex'; }
+});
+
+function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(function(result) {
+    if (result.outcome === 'accepted') {
+      document.getElementById('installBanner').style.display = 'none';
+    }
+    deferredInstallPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', function() {
+  document.getElementById('installBanner').style.display = 'none';
+  deferredInstallPrompt = null;
+});
+</script>
+
+<!-- PWA Install Banner -->
+<div id="installBanner" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;border-radius:99px;padding:12px 22px;font-size:.88rem;font-weight:600;cursor:pointer;z-index:9999;box-shadow:0 8px 24px rgba(108,92,231,.4);display:none;align-items:center;gap:10px;white-space:nowrap" onclick="installPWA()">
+  📲 Install Equilibrium as an App
+  <span onclick="event.stopPropagation();document.getElementById('installBanner').style.display='none'" style="opacity:.7;font-size:1rem;margin-left:4px">✕</span>
+</div>
 </body>
 </html>
